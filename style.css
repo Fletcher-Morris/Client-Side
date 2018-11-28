@@ -1,0 +1,19 @@
+html
+{
+	background-color: black;
+	color: white;
+}
+
+body
+{
+	width: 800px;
+	height: 600px;
+	background-color: red;
+}
+
+#MainCanvas
+{
+	background-color: black;
+	border-style: solid;
+
+}
