@@ -28,10 +28,10 @@ window.addEventListener("load", function()
 function CreateObjects()
 {
     testImage = new Renderable("ralsei", new Vector2(50,50), img);
-    attack_btn = new Button(attack_btn, new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 40);
-    defend_btn = new Button(attack_btn, new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 40);
-    special_btn = new Button(attack_btn, new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 40);
-    evade_btn = new Button(attack_btn, new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 40);
+    attack_btn = new Button(attack_btn, new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
+    defend_btn = new Button(attack_btn, new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
+    special_btn = new Button(attack_btn, new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
+    evade_btn = new Button(attack_btn, new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
 }
 
 function Update()
@@ -113,7 +113,7 @@ class Button extends Object
         context.strokeStyle = "white";
         context.lineWidth = 4;
         context.stroke();
-        context.font = (this.fontSize + "px Arial");
+        context.font = (this.fontSize + "px PressStart2P");
         context.textAlign = "center";
         context.textBaseline = "middle";
         context.fillStyle = "white";
