@@ -1,0 +1,52 @@
+{
+  "spells": [
+    {
+      "name": "flames",
+      "type": "attack",
+      "cost": 2,
+      "effect": 3
+    },
+    {
+      "name": "frost",
+      "type": "attack",
+      "cost": 1,
+      "effect": 2
+    },
+    {
+      "name": "sparks",
+      "type": "attack",
+      "cost": 3,
+      "effect": 4
+    },
+    {
+      "name": "barrier",
+      "type": "defend",
+      "cost": 2,
+      "effect": 4
+    },
+    {
+      "name": "deflect",
+      "type": "defend",
+      "cost": 4,
+      "effect": 5
+    },
+    {
+      "name": "heal",
+      "type": "special",
+      "cost": 3,
+      "effect": 3
+    },
+    {
+      "name": "boost",
+      "type": "special",
+      "cost": 4,
+      "effect": 4
+    },
+    {
+      "name": "evade",
+      "type": "evade",
+      "cost": 0,
+      "effect": 2
+    }
+  ]
+}
