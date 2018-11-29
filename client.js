@@ -15,6 +15,23 @@ var defendSpells = [];
 var specialSpells = [];
 var evadeSpells = [];
 
+//  IMAGES
+var wizard_1_img = new Image();
+wizard_1_img.src = 'images/wizard_1_img.png';
+var wizard_2_img = new Image();
+wizard_2_img.src = 'images/wizard_2_img.png';
+var wizard_3_img = new Image();
+wizard_3_img.src = 'images/wizard_3_img.png';
+var wizard_4_img = new Image();
+wizard_4_img.src = 'images/wizard_4_img.png';
+var wizard_5_img = new Image();
+wizard_5_img.src = 'images/wizard_5_img.png';
+var wizard_6_img = new Image();
+wizard_6_img.src = 'images/wizard_6_img.png';
+var wizard_7_img = new Image();
+wizard_7_img.src = 'images/wizard_7_img.png';
+var wizard_8_img = new Image();
+wizard_8_img.src = 'images/wizard_8_img.png';
 
 //  OBJECTS
 var all_Objects = [];
@@ -23,11 +40,6 @@ var attack_icon;
 var defend_btn;
 var special_btn;
 var evade_btn;
-var player1_sprite;
-var player2_sprite;
-var player3_sprite;
-var player4_sprite;
-
 
 //  RENDERER STUFF
 var renderer;
