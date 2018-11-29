@@ -2,7 +2,6 @@ var canvas;
 var context;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
-var SET_UP = false;
 const FPS_LIMIT = 30;
 
 var img = new Image();
@@ -60,8 +59,6 @@ window.addEventListener("load", function()
 
     LoadSpells();
     CreateObjects();
-
-    SET_UP = true;
 
     {
         setInterval(Update, 1000/FPS_LIMIT);
