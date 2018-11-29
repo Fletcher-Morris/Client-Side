@@ -1,5 +1,4 @@
-{
-  "spells": [
+spellJson = [
     {
       "name": "flames",
       "type": "attack",
@@ -48,5 +47,4 @@
       "cost": 0,
       "effect": 2
     }
-  ]
-}
+  ];

@@ -7,6 +7,11 @@ var img = new Image();
 img.src = 'images/test_img.png';
 var testImage
 
+var attackSpells = [];
+var defendSpells = [];
+var specialSpells = [];
+var evadeSpells = [];
+
 
 //  UI OBJECTS
 var attack_btn;
@@ -19,6 +24,7 @@ window.addEventListener("load", function()
     canvas = document.getElementById('MainCanvas');
     context = canvas.getContext('2d');
 
+    LoadSpells();
     CreateObjects();
 
     Update();
@@ -43,6 +49,8 @@ function Update()
     defend_btn.Update();
     special_btn.Update();
     evade_btn.Update();
+
+    var s = new Spell();
 }
 
 class Vector2
@@ -118,5 +126,28 @@ class Button extends Object
         context.textBaseline = "middle";
         context.fillStyle = "white";
         context.fillText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2));
+    }
+}
+
+function LoadSpells()
+{
+    loadedSpells = JSON.parse(JSON.stringify(spellJson));
+
+    for (var i = 0; i < loadedSpells.length; i++) {
+
+        var newSpell = loadedSpells[i];
+
+        console.log(newSpell);
+    }
+}
+
+class Spell
+{
+    constructor(name, type, cost, effect)
+    {
+        this.name = name;
+        this.type = type;
+        this.cost = cost;
+        this.effect = effect;
     }
 }
