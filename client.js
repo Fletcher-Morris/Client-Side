@@ -16,7 +16,8 @@ var specialSpells = [];
 var evadeSpells = [];
 
 
-//  UI OBJECTS
+//  OBJECTS
+var all_Objects = [];
 var attack_btn;
 var attack_icon;
 var defend_btn;
@@ -68,14 +69,27 @@ window.addEventListener("load", function()
 
 function CreateObjects()
 {
-    testImage = new Renderable("ralsei", new Vector2(50,50), img);
+    all_Objects = new Array();
 
+    testImage = new Renderable("ralsei", new Vector2(50,50), img);
     attack_btn = new Button(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
     defend_btn = new Button(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
     special_btn = new Button(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
     evade_btn = new Button(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
-
     hoveredButton = attack_btn;
+
+    for (var i = 0; i < attackSpells.length; i++) {
+        var spellButton = new Button(new Vector2(200, i*50), 150, 50, attackSpells[i].name.toUpperCase(), 20);
+    }
+    for (var i = 0; i < defendSpells.length; i++) {
+        var spellButton = new Button(new Vector2(350, i*50), 150, 50, defendSpells[i].name.toUpperCase(), 20);
+    }
+    for (var i = 0; i < specialSpells.length; i++) {
+        var spellButton = new Button(new Vector2(500, i*50), 150, 50, specialSpells[i].name.toUpperCase(), 20);
+    }
+    for (var i = 0; i < evadeSpells.length; i++) {
+        var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name.toUpperCase(), 20);
+    }
 }
 
 //  HANDLE KEY-DOWN EVENTS
@@ -163,43 +177,16 @@ function Update()
         special_btn.Hover(hoveredButton == special_btn);
         evade_btn.Hover(hoveredButton == evade_btn);
     }
-
-    testImage.Update();
-
-    attack_btn.Update();
-    defend_btn.Update();
-    special_btn.Update();
-    evade_btn.Update();
-
-
-    for (var i = 0; i < attackSpells.length; i++) {
-        var spellButton = new Button(new Vector2(200, i*50), 150, 50, attackSpells[i].name.toUpperCase(), 20);
-        spellButton.Update();
+    
+    for (var i = 0; i < all_Objects.length; i++)
+    {
+        all_Objects[i].Update();
     }
-    for (var i = 0; i < defendSpells.length; i++) {
-        var spellButton = new Button(new Vector2(350, i*50), 150, 50, defendSpells[i].name.toUpperCase(), 20);
-        spellButton.Update();
-    }
-    for (var i = 0; i < specialSpells.length; i++) {
-        var spellButton = new Button(new Vector2(500, i*50), 150, 50, specialSpells[i].name.toUpperCase(), 20);
-        spellButton.Update();
-    }
-    for (var i = 0; i < evadeSpells.length; i++) {
-        var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name.toUpperCase(), 20);
-        spellButton.Update();
-    }
-
-
-
-
-
     Render();
     Input();
 }
 function Render()
-{
-    
-
+{ 
     renderer.Proccess();
     renderer.Flush();
 }
@@ -225,11 +212,21 @@ class Object
         this.pos = pos;
         this.parent = parent;
         this.renderable = false;
+        this.enabled = true;
+        all_Objects.push(this);
+    }
+
+    Enable(enable)
+    {
+        this.enabled = enable;
     }
 
     Update()
     {
+        if(this.enabled)
+        {
 
+        }
     }
 }
 
@@ -238,7 +235,9 @@ class Renderable extends Object
     constructor(name, pos, image)
     {
         super(name, pos);
+        rendererImages.push(this);
         this.image = image;
+        this.draw = true;
     }
     SetScale(width, height)
     {
@@ -246,23 +245,38 @@ class Renderable extends Object
         this.height = height;
         this.customScale = true;
     }
+    Enable(enable)
+    {
+        super.Enable(enable);
+        this.draw = enable;
+    }
 
     Update()
     {
-        super.Update();
-
-        this.Render();
+        if(this.enabled)
+        {
+            super.Update();
+        }
     }
 
     Render()
     {
-        if(this.customScale)
+        if(this.draw)
         {
-            context.drawImage(this.image, this.pos.x, this.pos.y, this.width, this.height);
-        }
-        else
-        {
-            context.drawImage(this.image, this.pos.x, this.pos.y);
+            context.clearRect(this.pos.x,this.pos.y,CANVAS_WIDTH,CANVAS_HEIGHT);
+            if(this.enabled)
+            {
+                if(this.customScale)
+                {
+                    context.drawImage(this.image, this.pos.x, this.pos.y, this.width, this.height);
+                }
+                else
+                {
+                    context.drawImage(this.image, this.pos.x, this.pos.y);
+                }
+            }
+
+            this.draw = false;
         }
     }
 }
@@ -277,12 +291,21 @@ class Button extends Object
         this.text = text;
         this.fontSize = fontSize;
         rendererButtons.push(this);
-        this.clear = true;
+        this.draw = true;
+    }
+
+    Enable(enable)
+    {
+        super.Enable(enable);
+        this.draw = enable;
     }
 
     Update()
     {
-        super.Update();
+        if(this.enabled)
+        {
+            super.Update();
+        }
     }
 
     Hover(hover)
@@ -297,29 +320,31 @@ class Button extends Object
         }
         if(hover != this.hovered)
         {
-            this.clear = true;
+            this.draw = true;
         }
         this.hovered = hover;
     }
 
     Render()
     {
-        if(this.clear)
+        if(this.draw)
         {
             context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
 
-            renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
-
-            if(this.hovered)
+            if(this.enabled)
             {
-                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "yellow", this.fontSize));
-            }
-            else
-            {
-                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
+                renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
+                if(this.hovered)
+                {
+                    renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "yellow", this.fontSize));
+                }
+                else
+                {
+                    renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
+                }
             }
 
-            this.clear = false;
+            this.draw = false;
         }
     }
 }
@@ -396,6 +421,11 @@ class Renderer
         this.batchedTexts = [];
     }
 
+    SubmitImage(image)
+    {
+        this.batchedImages.push(image);
+    }
+
     SubmitStroke(stroke)
     {
         this.batchedStrokes.push(stroke);
@@ -416,25 +446,37 @@ class Renderer
 
     Flush()
     {
-        //  RENDER STROKES
-        for (var i = 0; i < this.batchedStrokes.length; i++)
+        //  RENDER IMAGES
+        for (var i = 0; i < rendererImages.length; i++)
         {
-            context.rect(this.batchedStrokes[i].pos.x,this.batchedStrokes[i].pos.y,this.batchedStrokes[i].width,this.batchedStrokes[i].height);
-            context.strokeStyle = this.batchedStrokes[i].strokeColour;
-            context.lineWidth = this.batchedStrokes[i].lineWidth;
+            rendererImages[i].Render();
         }
-        context.stroke();
-        this.batchedStrokes = [];
+
+        //  RENDER STROKES
+        if(this.batchedStrokes.length >= 1)
+        {
+            for (var i = 0; i < this.batchedStrokes.length; i++)
+            {
+                context.rect(this.batchedStrokes[i].pos.x,this.batchedStrokes[i].pos.y,this.batchedStrokes[i].width,this.batchedStrokes[i].height);
+                context.strokeStyle = this.batchedStrokes[i].strokeColour;
+                context.lineWidth = this.batchedStrokes[i].lineWidth;
+            }
+            context.stroke();
+            this.batchedStrokes = [];
+        }
 
         //  RENDER TEXTS
-        context.textBaseline = "middle";
-        context.textAlign = this.batchedTexts[0].align;
-        for (var i = 0; i < this.batchedTexts.length; i++)
+        if(this.batchedTexts.length >= 1)
         {
-            context.font = (this.batchedTexts[i].size + "px PressStart2P");
-            context.fillStyle = this.batchedTexts[i].colour;
-            context.fillText(this.batchedTexts[i].text, this.batchedTexts[i].x, this.batchedTexts[i].y);
+            context.textBaseline = "middle";
+            context.textAlign = this.batchedTexts[0].align;
+            for (var i = 0; i < this.batchedTexts.length; i++)
+            {
+                context.font = (this.batchedTexts[i].size + "px PressStart2P");
+                context.fillStyle = this.batchedTexts[i].colour;
+                context.fillText(this.batchedTexts[i].text, this.batchedTexts[i].x, this.batchedTexts[i].y);
+            }
+            this.batchedTexts = [];
         }
-        this.batchedTexts = [];
     }
 }
