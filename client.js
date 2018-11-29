@@ -269,6 +269,7 @@ function FixInput()
     leftDown = false;
     upDown = false;
     downDown = false;
+    submitDown = false;
 }
 
 class Vector2
