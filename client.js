@@ -23,6 +23,10 @@ var attack_icon;
 var defend_btn;
 var special_btn;
 var evade_btn;
+var player1_sprite;
+var player2_sprite;
+var player3_sprite;
+var player4_sprite;
 
 
 //  RENDERER STUFF
@@ -219,7 +223,7 @@ function KeyUp(e)
         submitPrev = false;
     }
 }
-
+//  UPDATE OBJECTS IN THE SCENE
 function Update()
 {
     if(gameState == "CHOOSING_ACTION")
@@ -258,11 +262,13 @@ function Update()
     Render();
     FixInput();
 }
+//  RENDER THE SCENE
 function Render()
 { 
     renderer.Proccess();
     renderer.Flush();
 }
+//  RESET INPUTS TO FALSE
 function FixInput()
 {
     rightDown = false;
@@ -271,7 +277,7 @@ function FixInput()
     downDown = false;
     submitDown = false;
 }
-
+//  A SIMPLE CLASS FOR STORING POSITIONS
 class Vector2
 {
     constructor(x,y)
