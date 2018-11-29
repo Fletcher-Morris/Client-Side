@@ -39,6 +39,12 @@ var rightPrev = false;
 var leftDown = false;
 var leftHeld = false;
 var leftPrev = false;
+var upDown = false;
+var upHeld = false;
+var upPrev = false;
+var downDown = false;
+var downHeld = false;
+var downPrev = false;
 
 
 //  GAME STUFF
@@ -108,7 +114,7 @@ function KeyDown(e)
     }
 
     //  LEFT KEY
-    if(e.keyCode == 37 || e.keyCode == 65)
+    if(e.keyCode == 65 || e.keyCode == 37)
     {
         leftHeld = true;
         if(leftPrev == false)
@@ -117,6 +123,30 @@ function KeyDown(e)
             console.log("Left Pressed");
         }
         leftPrev = true;
+    }
+
+    //  UP KEY
+    if(e.keyCode == 38 || e.keyCode == 87)
+    {
+        upHeld = true;
+        if(upPrev == false)
+        {
+            upDown = true;
+            console.log("Up Pressed");
+        }
+        upPrev = true;
+    }
+
+    //  DOWN KEY
+    if(e.keyCode == 40 || e.keyCode == 83)
+    {
+        downHeld = true;
+        if(downPrev == false)
+        {
+            downDown = true;
+            console.log("Down Pressed");
+        }
+        downPrev = true;
     }
 }
 //  HANDLE KEY-UP EVENTS
@@ -144,6 +174,30 @@ function KeyUp(e)
             console.log("Left Released");
         }
         leftPrev = false;
+    }
+
+    //  UP KEY
+    if(e.keyCode == 38 || e.keyCode == 87)
+    {
+        uptHeld = false;
+        if(upPrev == true)
+        {
+            upDown = false;
+            console.log("Up Released");
+        }
+        upPrev = false;
+    }
+
+    //  DOWN KEY
+    if(e.keyCode == 40 || e.keyCode == 83)
+    {
+        downHeld = false;
+        if(downPrev == true)
+        {
+            downDown = false;
+            console.log("Down Released");
+        }
+        downPrev = false;
     }
 }
 
@@ -183,17 +237,19 @@ function Update()
         all_Objects[i].Update();
     }
     Render();
-    Input();
+    FixInput();
 }
 function Render()
 { 
     renderer.Proccess();
     renderer.Flush();
 }
-function Input()
+function FixInput()
 {
     rightDown = false;
     leftDown = false;
+    upDown = false;
+    downDown = false;
 }
 
 class Vector2
