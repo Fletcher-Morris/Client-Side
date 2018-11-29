@@ -12,22 +12,62 @@ html
 	background-color: black;
 	color: white;
 	font-family: "PressStart2P";
+	image-rendering: pixelated;
 }
 
 body
 {
-	width: 806px;
 	margin: auto;
+}
+
+#MainCanvas
+{
+	width: auto;
+	height: auto;
+	border-style: solid;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+@media screen and (max-width: 960px)
+{
+	#MainCanvas
+	{
+		width: 800px;
+		border-style: solid;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+}
+@media screen and (max-width: 860px)
+{
+	#MainCanvas
+	{
+		width: 680px;
+		height: auto;
+		border-style: solid;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+}
+@media screen and (max-width: 760px)
+{
+	#MainCanvas
+	{
+		width: 90vw;
+		height: auto;
+		border-style: solid;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
 }
 
 h1
 {
 	font-size: auto;
 	text-align: center;
-}
-
-#MainCanvas
-{
-	margin: auto;
-	border-style: solid;
 }
