@@ -34,10 +34,10 @@ window.addEventListener("load", function()
 function CreateObjects()
 {
     testImage = new Renderable("ralsei", new Vector2(50,50), img);
-    attack_btn = new Button(attack_btn, new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
-    defend_btn = new Button(attack_btn, new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
-    special_btn = new Button(attack_btn, new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
-    evade_btn = new Button(attack_btn, new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
+    attack_btn = new Button(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
+    defend_btn = new Button(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
+    special_btn = new Button(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
+    evade_btn = new Button(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
 }
 
 function Update()
@@ -50,7 +50,23 @@ function Update()
     special_btn.Update();
     evade_btn.Update();
 
-    var s = new Spell();
+
+    for (var i = 0; i < attackSpells.length; i++) {
+        var spellButton = new Button(new Vector2(200, i*50), 150, 50, attackSpells[i].name, 20);
+        spellButton.Update();
+    }
+    for (var i = 0; i < defendSpells.length; i++) {
+        var spellButton = new Button(new Vector2(350, i*50), 150, 50, defendSpells[i].name, 20);
+        spellButton.Update();
+    }
+    for (var i = 0; i < specialSpells.length; i++) {
+        var spellButton = new Button(new Vector2(500, i*50), 150, 50, specialSpells[i].name, 20);
+        spellButton.Update();
+    }
+    for (var i = 0; i < evadeSpells.length; i++) {
+        var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name, 20);
+        spellButton.Update();
+    }
 }
 
 class Vector2
@@ -100,9 +116,9 @@ class Renderable extends Object
 
 class Button extends Object
 {
-    constructor(name, pos, width, height, text, fontSize)
+    constructor(pos, width, height, text, fontSize)
     {
-        super(name, pos);
+        super((text) + ("_button"), pos);
         this.width = width;
         this.height = height;
         this.text = text;
@@ -136,6 +152,23 @@ function LoadSpells()
     for (var i = 0; i < loadedSpells.length; i++) {
 
         var newSpell = loadedSpells[i];
+
+        if (newSpell.type == "attack")
+        {
+            attackSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+        }
+        else if (newSpell.type == "defend")
+        {
+            defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+        }
+        else if (newSpell.type == "evade")
+        {
+            evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+        }
+        else
+        {
+            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+        }
 
         console.log(newSpell);
     }
