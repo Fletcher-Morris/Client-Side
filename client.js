@@ -193,7 +193,7 @@ function Update()
 }
 function Render()
 {
-    context.clearRect(0,0,800,600);
+    
 
     renderer.Proccess();
     renderer.Flush();
@@ -267,6 +267,7 @@ class Button extends Object
         this.text = text;
         this.fontSize = fontSize;
         rendererButtons.push(this);
+        this.clear = true;
     }
 
     Update()
@@ -284,20 +285,31 @@ class Button extends Object
             }
             hoveredButton = this;
         }
+        if(hover != this.hovered)
+        {
+            this.clear = true;
+        }
         this.hovered = hover;
     }
 
     Render()
     {
-        renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
+        if(this.clear)
+        {
+            context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
 
-        if(this.hovered)
-        {
-            renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "yellow", this.fontSize));
-        }
-        else
-        {
-            renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
+            renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
+
+            if(this.hovered)
+            {
+                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "yellow", this.fontSize));
+            }
+            else
+            {
+                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
+            }
+
+            this.clear = false;
         }
     }
 }
