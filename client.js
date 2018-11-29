@@ -2,7 +2,8 @@ var canvas;
 var context;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
-
+var SET_UP = false;
+const FPS_LIMIT = 30;
 
 var img = new Image();
 img.src = 'images/test_img.png';
@@ -33,7 +34,9 @@ var leftHeld = false;
 var leftPrev = false;
 
 
-//  LOADED IMAGES
+//  GAME STUFF
+var gameState = "CHOOSING_ACTION";
+var hoveredButton = attack_btn;
 
 
 window.addEventListener("load", function()
@@ -46,7 +49,11 @@ window.addEventListener("load", function()
     LoadSpells();
     CreateObjects();
 
-    Update();
+    SET_UP = true;
+
+    {
+        setInterval(Update, 1000/FPS_LIMIT);
+    }
 
 }, false);
 
@@ -58,6 +65,8 @@ function CreateObjects()
     defend_btn = new Button(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
     special_btn = new Button(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
     evade_btn = new Button(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
+
+    hoveredButton = attack_btn;
 }
 
 //  HANDLE KEY-DOWN EVENTS
@@ -117,6 +126,29 @@ function KeyUp(e)
 
 function Update()
 {
+    if(gameState == "CHOOSING_ACTION")
+    {
+        if((hoveredButton != attack_btn) && (hoveredButton != defend_btn) && (hoveredButton != special_btn) && (hoveredButton != evade_btn))
+        {
+            console.log(hoveredButton);
+            attack_btn.Hover(true);
+        }
+
+        if(rightDown)
+        {
+            if(hoveredButton === attack_btn) hoveredButton = defend_btn;
+            else if(hoveredButton === defend_btn) hoveredButton = special_btn;
+            else if(hoveredButton === special_btn) hoveredButton = evade_btn;
+            else if(hoveredButton === evade_btn) hoveredButton = attack_btn;
+        }
+
+        attack_btn.Hover(hoveredButton === attack_btn);
+        defend_btn.Hover(hoveredButton === defend_btn);
+        special_btn.Hover(hoveredButton === special_btn);
+        evade_btn.Hover(hoveredButton === evade_btn);
+    }
+
+
     context.clearRect(0,0,800,600);
     testImage.Update();
 
@@ -219,6 +251,19 @@ class Button extends Object
         this.Render();
     }
 
+    Hover(hover)
+    {
+        if(hover)
+        {
+            if(hoveredButton != this)
+            {
+                hoveredButton.Hover(false);
+            }
+            hoveredButton = this;
+        }
+        this.hovered = hover;
+    }
+
     Render()
     {
         context.rect(this.pos.x,this.pos.y,this.width,this.height);
@@ -228,7 +273,14 @@ class Button extends Object
         context.font = (this.fontSize + "px PressStart2P");
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillStyle = "white";
+        if(this.hovered)
+        {
+            context.fillStyle = "yellow";
+        }
+        else
+        {
+            context.fillStyle = "white";
+        }
         context.fillText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2));
     }
 }
@@ -258,7 +310,7 @@ function LoadSpells()
             specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
         }
 
-        console.log(newSpell);
+        //console.log(newSpell);
     }
 }
 
