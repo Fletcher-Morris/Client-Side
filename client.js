@@ -534,7 +534,7 @@ class Renderer
             {
                 context.rect(this.batchedStrokes[i].pos.x,this.batchedStrokes[i].pos.y,this.batchedStrokes[i].width,this.batchedStrokes[i].height);
                 context.strokeStyle = this.batchedStrokes[i].strokeColour;
-                context.lineWidth = this.batchedStrokes[i].lineWidth;
+                context.lineWidth = this.batchedStrokes[i].strokeWidth;
             }
             context.stroke();
             this.batchedStrokes = [];
