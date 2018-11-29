@@ -45,6 +45,9 @@ var upPrev = false;
 var downDown = false;
 var downHeld = false;
 var downPrev = false;
+var submitDown = false;
+var submitHeld = false;
+var submitPrev = false;
 
 
 //  GAME STUFF
@@ -112,7 +115,6 @@ function KeyDown(e)
         }
         rightPrev = true;
     }
-
     //  LEFT KEY
     if(e.keyCode == 65 || e.keyCode == 37)
     {
@@ -124,7 +126,6 @@ function KeyDown(e)
         }
         leftPrev = true;
     }
-
     //  UP KEY
     if(e.keyCode == 38 || e.keyCode == 87)
     {
@@ -136,7 +137,6 @@ function KeyDown(e)
         }
         upPrev = true;
     }
-
     //  DOWN KEY
     if(e.keyCode == 40 || e.keyCode == 83)
     {
@@ -147,6 +147,17 @@ function KeyDown(e)
             console.log("Down Pressed");
         }
         downPrev = true;
+    }
+    //  SUBMIT KEY
+    if(e.keyCode == 32 || e.keyCode == 13)
+    {
+        submitHeld = true;
+        if(submitPrev == false)
+        {
+            submitDown = true;
+            console.log("Submit Pressed");
+        }
+        submitPrev = true;
     }
 }
 //  HANDLE KEY-UP EVENTS
@@ -163,7 +174,6 @@ function KeyUp(e)
         }
         rightPrev = false;
     }
-
     //  LEFT KEY
     if(e.keyCode == 37 || e.keyCode == 65)
     {
@@ -175,7 +185,6 @@ function KeyUp(e)
         }
         leftPrev = false;
     }
-
     //  UP KEY
     if(e.keyCode == 38 || e.keyCode == 87)
     {
@@ -187,7 +196,6 @@ function KeyUp(e)
         }
         upPrev = false;
     }
-
     //  DOWN KEY
     if(e.keyCode == 40 || e.keyCode == 83)
     {
@@ -198,6 +206,17 @@ function KeyUp(e)
             console.log("Down Released");
         }
         downPrev = false;
+    }
+    //  SUBMIT KEY
+    if(e.keyCode == 32 || e.keyCode == 13)
+    {
+        submitHeld = false;
+        if(submitPrev == true)
+        {
+            submitDown = false;
+            console.log("Submit Released");
+        }
+        submitPrev = false;
     }
 }
 
