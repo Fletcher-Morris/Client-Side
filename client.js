@@ -25,6 +25,13 @@ var special_btn;
 var evade_btn;
 
 
+//  RENDERER STUFF
+var renderer;
+var rendererButtons;
+var rendererImages;
+var rendererTexts;
+
+
 //  INPUT STUFF
 var rightDown = false;
 var rightHeld = false;
@@ -45,6 +52,11 @@ window.addEventListener("load", function()
     document.addEventListener('keyup', KeyUp, false);
     canvas = document.getElementById('MainCanvas');
     context = canvas.getContext('2d');
+
+    renderer = new Renderer();
+    rendererButtons = new Array();
+    rendererImages = new Array();
+    rendererTexts = new Array();
 
     LoadSpells();
     CreateObjects();
@@ -136,20 +148,18 @@ function Update()
 
         if(rightDown)
         {
-            if(hoveredButton === attack_btn) hoveredButton = defend_btn;
-            else if(hoveredButton === defend_btn) hoveredButton = special_btn;
-            else if(hoveredButton === special_btn) hoveredButton = evade_btn;
-            else if(hoveredButton === evade_btn) hoveredButton = attack_btn;
+            if(hoveredButton == attack_btn) hoveredButton = defend_btn;
+            else if(hoveredButton == defend_btn) hoveredButton = special_btn;
+            else if(hoveredButton == special_btn) hoveredButton = evade_btn;
+            else if(hoveredButton == evade_btn) hoveredButton = attack_btn;
         }
 
-        attack_btn.Hover(hoveredButton === attack_btn);
-        defend_btn.Hover(hoveredButton === defend_btn);
-        special_btn.Hover(hoveredButton === special_btn);
-        evade_btn.Hover(hoveredButton === evade_btn);
+        attack_btn.Hover(hoveredButton == attack_btn);
+        defend_btn.Hover(hoveredButton == defend_btn);
+        special_btn.Hover(hoveredButton == special_btn);
+        evade_btn.Hover(hoveredButton == evade_btn);
     }
 
-
-    context.clearRect(0,0,800,600);
     testImage.Update();
 
     attack_btn.Update();
@@ -174,6 +184,19 @@ function Update()
         var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name.toUpperCase(), 20);
         spellButton.Update();
     }
+
+
+
+
+
+    Render();
+}
+function Render()
+{
+    context.clearRect(0,0,800,600);
+
+    renderer.Proccess();
+    renderer.Flush();
 }
 
 class Vector2
@@ -243,12 +266,12 @@ class Button extends Object
         this.height = height;
         this.text = text;
         this.fontSize = fontSize;
+        rendererButtons.push(this);
     }
 
     Update()
     {
         super.Update();
-        this.Render();
     }
 
     Hover(hover)
@@ -266,22 +289,16 @@ class Button extends Object
 
     Render()
     {
-        context.rect(this.pos.x,this.pos.y,this.width,this.height);
-        context.strokeStyle = "white";
-        context.lineWidth = 4;
-        context.stroke();
-        context.font = (this.fontSize + "px PressStart2P");
-        context.textAlign = "center";
-        context.textBaseline = "middle";
+        renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
+
         if(this.hovered)
         {
-            context.fillStyle = "yellow";
+            renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "yellow", this.fontSize));
         }
         else
         {
-            context.fillStyle = "white";
+            renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
         }
-        context.fillText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2));
     }
 }
 
@@ -322,5 +339,80 @@ class Spell
         this.type = type;
         this.cost = cost;
         this.effect = effect;
+    }
+}
+
+class RendererStroke
+{
+    constructor(pos, width, height, strokeWidth, strokeColour)
+    {
+        this.pos = pos;
+        this.width = width;
+        this.height = height;
+        this.strokeWidth = strokeWidth;
+        this.strokeColour = strokeColour;
+    }
+}
+class RendererText
+{
+    constructor(text, x, y, align, colour, size)
+    {
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        this.align = align;
+        this.colour = colour;
+        this.size = size;
+    }
+}
+
+class Renderer
+{
+    constructor()
+    {
+        this.batchedStrokes = [];
+        this.batchedTexts = [];
+    }
+
+    SubmitStroke(stroke)
+    {
+        this.batchedStrokes.push(stroke);
+    }
+
+    SubmitText(text)
+    {
+        this.batchedTexts.push(text);
+    }
+
+    Proccess()
+    {
+        for (var i = 0; i < rendererButtons.length; i++)
+        {
+            rendererButtons[i].Render();
+        }
+    }
+
+    Flush()
+    {
+        //  RENDER STROKES
+        for (var i = 0; i < this.batchedStrokes.length; i++)
+        {
+            context.rect(this.batchedStrokes[i].pos.x,this.batchedStrokes[i].pos.y,this.batchedStrokes[i].width,this.batchedStrokes[i].height);
+            context.strokeStyle = this.batchedStrokes[i].strokeColour;
+            context.lineWidth = this.batchedStrokes[i].lineWidth;
+        }
+        context.stroke();
+        this.batchedStrokes = [];
+
+        //  RENDER TEXTS
+        context.textBaseline = "middle";
+        context.textAlign = this.batchedTexts[0].align;
+        for (var i = 0; i < this.batchedTexts.length; i++)
+        {
+            context.font = (this.batchedTexts[i].size + "px PressStart2P");
+            context.fillStyle = this.batchedTexts[i].colour;
+            context.fillText(this.batchedTexts[i].text, this.batchedTexts[i].x, this.batchedTexts[i].y);
+        }
+        this.batchedTexts = [];
     }
 }
