@@ -3,10 +3,13 @@ var context;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 
+
 var img = new Image();
 img.src = 'images/test_img.png';
 var testImage
 
+
+//  LOADED SPELLS
 var attackSpells = [];
 var defendSpells = [];
 var specialSpells = [];
@@ -19,8 +22,20 @@ var defend_btn;
 var special_btn;
 var evade_btn;
 
+
+//  INPUT STUFF
+var rightDown = false;
+var rightHeld = false;
+var rightPrev = false;
+var leftDown = false;
+var leftHeld = false;
+var leftPrev = false;
+
+
 window.addEventListener("load", function()
 {
+    document.addEventListener('keydown', KeyDown, false);
+    document.addEventListener('keyup', KeyUp, false);
     canvas = document.getElementById('MainCanvas');
     context = canvas.getContext('2d');
 
@@ -40,6 +55,61 @@ function CreateObjects()
     evade_btn = new Button(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
 }
 
+//  HANDLE KEY-DOWN EVENTS
+function KeyDown(e)
+{
+    //  RIGHT KEY
+    if(e.keyCode == 39 || e.keyCode == 68)
+    {
+        rightHeld = true;
+        if(rightPrev == false)
+        {
+            rightDown = true;
+            console.log("Right Pressed");
+        }
+        rightPrev = true;
+    }
+
+    //  LEFT KEY
+    if(e.keyCode == 37 || e.keyCode == 65)
+    {
+        leftHeld = true;
+        if(leftPrev == false)
+        {
+            leftDown = true;
+            console.log("Left Pressed");
+        }
+        leftPrev = true;
+    }
+}
+//  HANDLE KEY-UP EVENTS
+function KeyUp(e)
+{
+    //  RIGHT KEY
+    if(e.keyCode == 39 || e.keyCode == 68)
+    {
+        rightHeld = false;
+        if(rightPrev == true)
+        {
+            rightDown = false;
+            console.log("Right Released");
+        }
+        rightPrev = false;
+    }
+
+    //  LEFT KEY
+    if(e.keyCode == 37 || e.keyCode == 65)
+    {
+        leftHeld = false;
+        if(leftPrev == true)
+        {
+            leftDown = false;
+            console.log("Left Released");
+        }
+        leftPrev = false;
+    }
+}
+
 function Update()
 {
     context.clearRect(0,0,800,600);
@@ -52,19 +122,19 @@ function Update()
 
 
     for (var i = 0; i < attackSpells.length; i++) {
-        var spellButton = new Button(new Vector2(200, i*50), 150, 50, attackSpells[i].name, 20);
+        var spellButton = new Button(new Vector2(200, i*50), 150, 50, attackSpells[i].name.toUpperCase(), 20);
         spellButton.Update();
     }
     for (var i = 0; i < defendSpells.length; i++) {
-        var spellButton = new Button(new Vector2(350, i*50), 150, 50, defendSpells[i].name, 20);
+        var spellButton = new Button(new Vector2(350, i*50), 150, 50, defendSpells[i].name.toUpperCase(), 20);
         spellButton.Update();
     }
     for (var i = 0; i < specialSpells.length; i++) {
-        var spellButton = new Button(new Vector2(500, i*50), 150, 50, specialSpells[i].name, 20);
+        var spellButton = new Button(new Vector2(500, i*50), 150, 50, specialSpells[i].name.toUpperCase(), 20);
         spellButton.Update();
     }
     for (var i = 0; i < evadeSpells.length; i++) {
-        var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name, 20);
+        var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name.toUpperCase(), 20);
         spellButton.Update();
     }
 }
