@@ -18,6 +18,7 @@ var evadeSpells = [];
 
 //  UI OBJECTS
 var attack_btn;
+var attack_icon;
 var defend_btn;
 var special_btn;
 var evade_btn;
@@ -30,6 +31,9 @@ var rightPrev = false;
 var leftDown = false;
 var leftHeld = false;
 var leftPrev = false;
+
+
+//  LOADED IMAGES
 
 
 window.addEventListener("load", function()
@@ -49,6 +53,7 @@ window.addEventListener("load", function()
 function CreateObjects()
 {
     testImage = new Renderable("ralsei", new Vector2(50,50), img);
+
     attack_btn = new Button(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
     defend_btn = new Button(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
     special_btn = new Button(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
@@ -170,6 +175,12 @@ class Renderable extends Object
         super(name, pos);
         this.image = image;
     }
+    SetScale(width, height)
+    {
+        this.width = width;
+        this.height = height;
+        this.customScale = true;
+    }
 
     Update()
     {
@@ -180,7 +191,14 @@ class Renderable extends Object
 
     Render()
     {
-        context.drawImage(this.image, this.pos.x, this.pos.y);
+        if(this.customScale)
+        {
+            context.drawImage(this.image, this.pos.x, this.pos.y, this.width, this.height);
+        }
+        else
+        {
+            context.drawImage(this.image, this.pos.x, this.pos.y);
+        }
     }
 }
 
