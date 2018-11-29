@@ -150,6 +150,13 @@ function Update()
             else if(hoveredButton == special_btn) hoveredButton = evade_btn;
             else if(hoveredButton == evade_btn) hoveredButton = attack_btn;
         }
+        else if(leftDown)
+        {
+            if(hoveredButton == attack_btn) hoveredButton = evade_btn;
+            else if(hoveredButton == defend_btn) hoveredButton = attack_btn;
+            else if(hoveredButton == special_btn) hoveredButton = defend_btn;
+            else if(hoveredButton == evade_btn) hoveredButton = special_btn;
+        }
 
         attack_btn.Hover(hoveredButton == attack_btn);
         defend_btn.Hover(hoveredButton == defend_btn);
@@ -187,6 +194,7 @@ function Update()
 
 
     Render();
+    Input();
 }
 function Render()
 {
@@ -194,6 +202,11 @@ function Render()
 
     renderer.Proccess();
     renderer.Flush();
+}
+function Input()
+{
+    rightDown = false;
+    leftDown = false;
 }
 
 class Vector2
