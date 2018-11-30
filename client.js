@@ -96,7 +96,7 @@ function CreateObjects()
 {
     all_Objects = new Array();
 
-    testImage = new Renderable("ralsei", new Vector2(50,50), img);
+    testImage = new Renderable("ralsei", new Vector2(50,50), wizard_1_img);
     attack_btn = new Button(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
     defend_btn = new Button(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
     special_btn = new Button(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
