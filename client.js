@@ -35,6 +35,8 @@ wizard_8_img.src = 'images/wizard_8_img.png';
 
 //  OBJECTS
 var all_Objects = [];
+var choose_nickname_text;
+var nickname_text;
 var attack_btn;
 var attack_icon;
 var defend_btn;
@@ -71,8 +73,9 @@ var submitPrev = false;
 
 
 //  GAME STUFF
-var gameState = "CHOOSING_ACTION";
+var gameState = "START";
 var hoveredButton = attack_btn;
+var playerName = "";
 
 
 window.addEventListener("load", function()
@@ -89,7 +92,6 @@ window.addEventListener("load", function()
 
     LoadSpells();
     CreateObjects();
-
     {
         setInterval(Update, 1000/FPS_LIMIT);
     }
@@ -100,14 +102,17 @@ function CreateObjects()
 {
     all_Objects = new Array();
 
-    var player_1_sprite = new Renderable("player_1", new Vector2(50,50), wizard_1_img);
-    var player_2_sprite = new Renderable("player_2", new Vector2(50,250), wizard_2_img);
-    var player_3_sprite = new Renderable("player_3", new Vector2(650,50), wizard_3_img);
-    var player_4_sprite = new Renderable("player_4", new Vector2(650,250), wizard_4_img);
-    attack_btn = new Button(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
-    defend_btn = new Button(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
-    special_btn = new Button(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
-    evade_btn = new Button(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
+    //  CONNECTION PAGE OBJECTS
+    choose_nickname_text = new TextObject(new Vector2(400,300), 0,0,"CHOOSE A NAME", 25, "white");
+
+    player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
+    player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_2_img);
+    player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_3_img);
+    player_4_sprite = new ImageObject("player_4", new Vector2(650,250), wizard_4_img);
+    attack_btn = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
+    defend_btn = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
+    special_btn = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
+    evade_btn = new ButtonObject(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
     hoveredButton = attack_btn;
 
     /*
@@ -136,7 +141,6 @@ function KeyDown(e)
         if(rightPrev == false)
         {
             rightDown = true;
-            console.log("Right Pressed");
         }
         rightPrev = true;
     }
@@ -147,7 +151,6 @@ function KeyDown(e)
         if(leftPrev == false)
         {
             leftDown = true;
-            console.log("Left Pressed");
         }
         leftPrev = true;
     }
@@ -158,7 +161,6 @@ function KeyDown(e)
         if(upPrev == false)
         {
             upDown = true;
-            console.log("Up Pressed");
         }
         upPrev = true;
     }
@@ -169,7 +171,6 @@ function KeyDown(e)
         if(downPrev == false)
         {
             downDown = true;
-            console.log("Down Pressed");
         }
         downPrev = true;
     }
@@ -180,7 +181,6 @@ function KeyDown(e)
         if(submitPrev == false)
         {
             submitDown = true;
-            console.log("Submit Pressed");
         }
         submitPrev = true;
     }
@@ -195,7 +195,6 @@ function KeyUp(e)
         if(rightPrev == true)
         {
             rightDown = false;
-            console.log("Right Released");
         }
         rightPrev = false;
     }
@@ -206,7 +205,6 @@ function KeyUp(e)
         if(leftPrev == true)
         {
             leftDown = false;
-            console.log("Left Released");
         }
         leftPrev = false;
     }
@@ -217,7 +215,6 @@ function KeyUp(e)
         if(upPrev == true)
         {
             upDown = false;
-            console.log("Up Released");
         }
         upPrev = false;
     }
@@ -228,7 +225,6 @@ function KeyUp(e)
         if(downPrev == true)
         {
             downDown = false;
-            console.log("Down Released");
         }
         downPrev = false;
     }
@@ -239,15 +235,23 @@ function KeyUp(e)
         if(submitPrev == true)
         {
             submitDown = false;
-            console.log("Submit Released");
         }
         submitPrev = false;
     }
 }
+
 //  UPDATE OBJECTS IN THE SCENE
 function Update()
 {
-    if(gameState == "CHOOSING_ACTION")
+    if(gameState == "START")
+    {
+        EnterGameState("CHOOSING_NAME");
+    }
+    else if(gameState == "CHOOSING_NAME")
+    {
+        //EnterGameState("CHOOSING_ACTION");
+    }
+    else if(gameState == "CHOOSING_ACTION")
     {
         if((hoveredButton != attack_btn) && (hoveredButton != defend_btn) && (hoveredButton != special_btn) && (hoveredButton != evade_btn))
         {
@@ -283,12 +287,44 @@ function Update()
     Render();
     FixInput();
 }
+
+function EnterGameState(state)
+{
+    if(state == gameState) return;
+
+    if(state == "CHOOSING_NAME")
+    {
+        EnableAllObjects(false);
+        choose_nickname_text.Enable(true);
+
+    }
+    else if(state == "CHOOSING_ACTION")
+    {
+        EnableAllObjects(false);
+        attack_btn.Enable(true);
+        defend_btn.Enable(true);
+        specia.Enable(true);
+        evade_btn.Enable(true);
+    }
+
+    gameState = state;
+    console.log(("ENTERED GAME STATE : ") + gameState);
+}
+
+function EnableAllObjects(enable)
+{
+    for (var i = 0; i < all_Objects.length; i++) {
+        all_Objects[i].Enable(enable);
+    }
+}
+
 //  RENDER THE SCENE
 function Render()
 { 
     renderer.Proccess();
     renderer.Flush();
 }
+
 //  RESET INPUTS TO FALSE
 function FixInput()
 {
@@ -298,6 +334,7 @@ function FixInput()
     downDown = false;
     submitDown = false;
 }
+
 //  A SIMPLE CLASS FOR STORING POSITIONS
 class Vector2
 {
@@ -307,6 +344,7 @@ class Vector2
         this.y = y;
     }
 }
+
 class Object
 {
     constructor(name, pos)
@@ -315,7 +353,7 @@ class Object
         this.pos = pos;
         this.parent = parent;
         this.renderable = false;
-        this.enabled = true;
+        this.Enable(false);
         all_Objects.push(this);
     }
 
@@ -333,7 +371,7 @@ class Object
     }
 }
 
-class Renderable extends Object
+class ImageObject extends Object
 {
     constructor(name, pos, image)
     {
@@ -389,7 +427,7 @@ class Renderable extends Object
     }
 }
 
-class Button extends Object
+class ButtonObject extends Object
 {
     constructor(pos, width, height, text, fontSize)
     {
@@ -406,6 +444,13 @@ class Button extends Object
     {
         super.Enable(enable);
         this.draw = enable;
+        if(enable)
+        {
+            if(hoveredButton.enabled == false)
+            {
+                this.Hover();
+            }
+        }
     }
 
     Update()
@@ -450,6 +495,50 @@ class Button extends Object
                 {
                     renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
                 }
+            }
+
+            this.draw = false;
+        }
+    }
+}
+
+class TextObject extends Object
+{
+    constructor(pos, width, height, text, fontSize, colour)
+    {
+        super(text, pos);
+        this.width = width;
+        this.height = height;
+        this.text = text;
+        this.fontSize = fontSize;
+        this.colour = colour;
+        this.draw = true;
+        rendererTexts.push(this);
+    }
+
+    Enable(enable)
+    {
+        super.Enable(enable);
+        this.draw = true;
+    }
+
+    Update()
+    {
+        if(this.enabled)
+        {
+            super.Update();
+        }
+    }
+
+    Render()
+    {
+        if(this.draw)
+        {
+            context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
+
+            if(this.enabled)
+            {
+                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", this.colour, this.fontSize));
             }
 
             this.draw = false;
@@ -549,6 +638,11 @@ class Renderer
         for (var i = 0; i < rendererButtons.length; i++)
         {
             rendererButtons[i].Render();
+        }
+
+        for (var i = 0; i < rendererTexts.length; i++)
+        {
+            rendererTexts[i].Render();
         }
     }
 
