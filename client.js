@@ -40,6 +40,10 @@ var attack_icon;
 var defend_btn;
 var special_btn;
 var evade_btn;
+var player_1_sprite;
+var player_2_sprite;
+var player_3_sprite;
+var player_4_sprite;
 
 //  RENDERER STUFF
 var renderer;
@@ -96,13 +100,17 @@ function CreateObjects()
 {
     all_Objects = new Array();
 
-    testImage = new Renderable("ralsei", new Vector2(50,50), wizard_1_img);
+    var player_1_sprite = new Renderable("player_1", new Vector2(50,50), wizard_1_img);
+    var player_2_sprite = new Renderable("player_2", new Vector2(50,250), wizard_2_img);
+    var player_3_sprite = new Renderable("player_3", new Vector2(650,50), wizard_3_img);
+    var player_4_sprite = new Renderable("player_4", new Vector2(650,250), wizard_4_img);
     attack_btn = new Button(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
     defend_btn = new Button(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
     special_btn = new Button(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
     evade_btn = new Button(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
     hoveredButton = attack_btn;
 
+    /*
     for (var i = 0; i < attackSpells.length; i++) {
         var spellButton = new Button(new Vector2(200, i*50), 150, 50, attackSpells[i].name.toUpperCase(), 20);
     }
@@ -115,6 +123,7 @@ function CreateObjects()
     for (var i = 0; i < evadeSpells.length; i++) {
         var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name.toUpperCase(), 20);
     }
+    */
 }
 
 //  HANDLE KEY-DOWN EVENTS
@@ -332,6 +341,7 @@ class Renderable extends Object
         rendererImages.push(this);
         this.image = image;
         this.draw = true;
+        this.SetScale(100,150);
     }
     SetScale(width, height)
     {
@@ -357,7 +367,11 @@ class Renderable extends Object
     {
         if(this.draw)
         {
-            context.clearRect(this.pos.x,this.pos.y,CANVAS_WIDTH,CANVAS_HEIGHT);
+            if(this.customScale)
+            {
+                context.clearRect(this.pos.x,this.pos.y,this.pos.x+this.width,this.pos.y-this.height);
+            }
+            
             if(this.enabled)
             {
                 if(this.customScale)
