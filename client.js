@@ -55,21 +55,11 @@ var rendererTexts;
 
 
 //  INPUT STUFF
-var rightDown = false;
-var rightHeld = false;
-var rightPrev = false;
-var leftDown = false;
-var leftHeld = false;
-var leftPrev = false;
-var upDown = false;
-var upHeld = false;
-var upPrev = false;
-var downDown = false;
-var downHeld = false;
-var downPrev = false;
-var submitDown = false;
-var submitHeld = false;
-var submitPrev = false;
+var lastLetterKeyDown = "";
+var keySetArray = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"," ","enter","esc","backspace"];
+var keyDownArray = [];
+var keyHeldArray = [];
+var keyPrevArray = [];
 
 
 //  GAME STUFF
@@ -89,6 +79,14 @@ window.addEventListener("load", function()
     rendererButtons = new Array();
     rendererImages = new Array();
     rendererTexts = new Array();
+    keyDownArray = [30];
+    keyHeldArray = [30];
+    keyPrevArray = [30];
+    for (var i = 0; i < keyDownArray.length; i++) {
+        keyDownArray[i] = false;
+        keyHeldArray[i] = false;
+        keyPrevArray[i] = false;
+    }
 
     LoadSpells();
     CreateObjects();
@@ -103,7 +101,8 @@ function CreateObjects()
     all_Objects = new Array();
 
     //  CONNECTION PAGE OBJECTS
-    choose_nickname_text = new TextObject(new Vector2(400,300), 0,0,"CHOOSE A NAME", 25, "white");
+    choose_nickname_text = new TextObject(new Vector2(400,280), 0,0,"CHOOSE A NAME", 25, "white");
+    nickname_text = new TextObject(new Vector2(0,320), 800,40,"", 25, "white");
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_2_img);
@@ -134,110 +133,106 @@ function CreateObjects()
 //  HANDLE KEY-DOWN EVENTS
 function KeyDown(e)
 {
-    //  RIGHT KEY
-    if(e.keyCode == 39 || e.keyCode == 68)
-    {
-        rightHeld = true;
-        if(rightPrev == false)
-        {
-            rightDown = true;
-        }
-        rightPrev = true;
-    }
-    //  LEFT KEY
-    if(e.keyCode == 65 || e.keyCode == 37)
-    {
-        leftHeld = true;
-        if(leftPrev == false)
-        {
-            leftDown = true;
-        }
-        leftPrev = true;
-    }
-    //  UP KEY
-    if(e.keyCode == 38 || e.keyCode == 87)
-    {
-        upHeld = true;
-        if(upPrev == false)
-        {
-            upDown = true;
-        }
-        upPrev = true;
-    }
-    //  DOWN KEY
-    if(e.keyCode == 40 || e.keyCode == 83)
-    {
-        downHeld = true;
-        if(downPrev == false)
-        {
-            downDown = true;
-        }
-        downPrev = true;
-    }
-    //  SUBMIT KEY
-    if(e.keyCode == 32 || e.keyCode == 13)
-    {
-        submitHeld = true;
-        if(submitPrev == false)
-        {
-            submitDown = true;
-        }
-        submitPrev = true;
-    }
+    ManageKey(e, true);
 }
 //  HANDLE KEY-UP EVENTS
 function KeyUp(e)
 {
-    //  RIGHT KEY
-    if(e.keyCode == 39 || e.keyCode == 68)
+    ManageKey(e, false);
+}
+function ManageKey(e, down)
+{
+    var keyId = 0;
+    if(e.keyCode == 32)keyId = GetKeyId("space");
+    else if(e.keyCode == 13)keyId = GetKeyId("enter");
+    else if(e.keyCode == 27)keyId = GetKeyId("esc");
+    else if(e.keyCode == 39)keyId = GetKeyId("right");
+    else if(e.keyCode == 37)keyId = GetKeyId("left");
+    else if(e.keyCode == 38)keyId = GetKeyId("up");
+    else if(e.keyCode == 40)keyId = GetKeyId("down");
+    else if(e.keyCode == 8)keyId = GetKeyId("backspace");
+    else keyId = e.keyCode - 65;
+    keyHeldArray[keyId] = down;
+    if(keyPrevArray[keyId] != down)
     {
-        rightHeld = false;
-        if(rightPrev == true)
+        keyDownArray[keyId] = down;
+        if(down)
         {
-            rightDown = false;
+            if(keySetArray[keyId] != undefined)
+            {
+                if(keySetArray[keyId] != "enter")
+                {
+                    if(keySetArray[keyId] != "esc")
+                    {
+                        lastLetterKeyDown = keySetArray[keyId];
+                    }
+                }
+            }
         }
-        rightPrev = false;
     }
-    //  LEFT KEY
-    if(e.keyCode == 37 || e.keyCode == 65)
+    keyPrevArray[keyId] = down;
+}
+function GetKeyId(keyCode)
+{
+    var keyId = 0;
+    if(keyCode == "right")keyCode = "d";
+    else if(keyCode == "left")keyCode = "a";
+    else if(keyCode == "up")keyCode = "w";
+    else if(keyCode == "down")keyCode = "s";
+    if(keyCode == "space")
     {
-        leftHeld = false;
-        if(leftPrev == true)
-        {
-            leftDown = false;
-        }
-        leftPrev = false;
+        //  SPACE
+        keyId = 26;
     }
-    //  UP KEY
-    if(e.keyCode == 38 || e.keyCode == 87)
+    else if(keyCode == "enter")
     {
-        uptHeld = false;
-        if(upPrev == true)
-        {
-            upDown = false;
-        }
-        upPrev = false;
+        //  ENTER
+        keyId = 27;
     }
-    //  DOWN KEY
-    if(e.keyCode == 40 || e.keyCode == 83)
+    else if(keyCode == "esc")
     {
-        downHeld = false;
-        if(downPrev == true)
-        {
-            downDown = false;
-        }
-        downPrev = false;
+        //  ESC
+        keyId = 28;
     }
-    //  SUBMIT KEY
-    if(e.keyCode == 32 || e.keyCode == 13)
+    else if(keyCode == "backspace")
     {
-        submitHeld = false;
-        if(submitPrev == true)
-        {
-            submitDown = false;
-        }
-        submitPrev = false;
+        //  BACKSPACE
+        keyId = 29;
     }
+    else
+    {
+        for (var i = 0; i < keySetArray.length; i++) {
+            if(keySetArray[i] == keyCode) keyId = i;
+        }
+    }
+    return keyId;
+}
+function GetKeyDown(keyCode)
+{
+    var keyId = 0;
+    keyId = GetKeyId(keyCode);
+    if(keyDownArray[keyId] == undefined) return false;
+    return keyDownArray[keyId];
+}
+function GetLastLetterKeyDown(reset)
+{
+    var key = lastLetterKeyDown;
+    if(reset) lastLetterKeyDown = "";
+    return key;
+}
+function AppendStringWithInput(text)
+{
+    var newText = text;
+    var newLetter = GetLastLetterKeyDown(true);
+    if(newLetter == "backspace")
+    {
+        newText = newText.slice(0,-1);
+    }
+    else
+    {
+        newText += newLetter;
+    }
+    return newText;
 }
 
 //  UPDATE OBJECTS IN THE SCENE
@@ -249,6 +244,9 @@ function Update()
     }
     else if(gameState == "CHOOSING_NAME")
     {
+        playerName = AppendStringWithInput(playerName);
+        nickname_text.SetText(playerName);
+
         //EnterGameState("CHOOSING_ACTION");
     }
     else if(gameState == "CHOOSING_ACTION")
@@ -259,14 +257,14 @@ function Update()
             attack_btn.Hover(true);
         }
 
-        if(rightDown)
+        if(GetKeyDown("d"))
         {
             if(hoveredButton == attack_btn) hoveredButton = defend_btn;
             else if(hoveredButton == defend_btn) hoveredButton = special_btn;
             else if(hoveredButton == special_btn) hoveredButton = evade_btn;
             else if(hoveredButton == evade_btn) hoveredButton = attack_btn;
         }
-        else if(leftDown)
+        else if(GetKeyDown("a"))
         {
             if(hoveredButton == attack_btn) hoveredButton = evade_btn;
             else if(hoveredButton == defend_btn) hoveredButton = attack_btn;
@@ -296,6 +294,7 @@ function EnterGameState(state)
     {
         EnableAllObjects(false);
         choose_nickname_text.Enable(true);
+        nickname_text.Enable(true);
 
     }
     else if(state == "CHOOSING_ACTION")
@@ -522,6 +521,15 @@ class TextObject extends Object
         this.draw = true;
     }
 
+    SetText(text)
+    {
+        if(text != this.text)
+        {
+            this.text = text;
+            this.draw = true;
+        }
+    }
+
     Update()
     {
         if(this.enabled)
@@ -535,7 +543,7 @@ class TextObject extends Object
         if(this.draw)
         {
             context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
-
+            console.log("CLEAR");
             if(this.enabled)
             {
                 renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", this.colour, this.fontSize));
