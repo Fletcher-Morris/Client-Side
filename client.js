@@ -37,6 +37,7 @@ wizard_8_img.src = 'images/wizard_8_img.png';
 var all_Objects = [];
 var choose_nickname_text;
 var nickname_text;
+var submit_name_btn;
 var attack_btn;
 var attack_icon;
 var defend_btn;
@@ -79,14 +80,9 @@ window.addEventListener("load", function()
     rendererButtons = new Array();
     rendererImages = new Array();
     rendererTexts = new Array();
-    keyDownArray = [30];
-    keyHeldArray = [30];
-    keyPrevArray = [30];
-    for (var i = 0; i < keyDownArray.length; i++) {
-        keyDownArray[i] = false;
-        keyHeldArray[i] = false;
-        keyPrevArray[i] = false;
-    }
+    keyDownArray = Array(30).fill(false);
+    keyHeldArray = Array(30).fill(false);
+    keyPrevArray = Array(30).fill(false);
 
     LoadSpells();
     CreateObjects();
@@ -103,6 +99,8 @@ function CreateObjects()
     //  CONNECTION PAGE OBJECTS
     choose_nickname_text = new TextObject(new Vector2(400,280), 0,0,"CHOOSE A NAME", 25, "white");
     nickname_text = new TextObject(new Vector2(0,320), 800,40,"", 25, "white");
+    submit_name_btn = new ButtonObject(new Vector2(300,450), 200,50,"ENTER", 25);
+    submit_name_btn.SetFunction("SUBMITNAME");
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_2_img);
@@ -142,76 +140,88 @@ function KeyUp(e)
 }
 function ManageKey(e, down)
 {
-    var keyId = 0;
-    if(e.keyCode == 32)keyId = GetKeyId("space");
-    else if(e.keyCode == 13)keyId = GetKeyId("enter");
-    else if(e.keyCode == 27)keyId = GetKeyId("esc");
-    else if(e.keyCode == 39)keyId = GetKeyId("right");
-    else if(e.keyCode == 37)keyId = GetKeyId("left");
-    else if(e.keyCode == 38)keyId = GetKeyId("up");
-    else if(e.keyCode == 40)keyId = GetKeyId("down");
-    else if(e.keyCode == 8)keyId = GetKeyId("backspace");
-    else keyId = e.keyCode - 65;
+    //console.log(down);
+    var keyId = GetKeyId(e.key.toLowerCase());
+    if(e.keyCode == 32) keyId = 26;
+
     keyHeldArray[keyId] = down;
-    if(keyPrevArray[keyId] != down)
+    
+    if(down)
     {
-        keyDownArray[keyId] = down;
-        if(down)
+        if(keyPrevArray[keyId] == false)
         {
-            if(keySetArray[keyId] != undefined)
+           keyDownArray[keyId] = false;
+           if(keySetArray[keyId] != "enter")
             {
-                if(keySetArray[keyId] != "enter")
+                if(keySetArray[keyId] != "esc")
                 {
-                    if(keySetArray[keyId] != "esc")
-                    {
-                        lastLetterKeyDown = keySetArray[keyId];
-                    }
+                    lastLetterKeyDown = keySetArray[keyId];
                 }
             }
+            console.log("KEY " + keySetArray[keyId] + " : DOWN");
+            keyPrevArray[keyId] = true;
+        }
+        else
+        {
+            //console.log(keyPrevArray[keyId]);
         }
     }
-    keyPrevArray[keyId] = down;
+    else
+    {
+        if(keyPrevArray[keyId] == true)
+        {
+            keyDownArray[keyId] = false;
+            keyDownArray[keyId] = true;
+        }
+    }
 }
 function GetKeyId(keyCode)
 {
     var keyId = 0;
-    if(keyCode == "right")keyCode = "d";
-    else if(keyCode == "left")keyCode = "a";
-    else if(keyCode == "up")keyCode = "w";
-    else if(keyCode == "down")keyCode = "s";
-    if(keyCode == "space")
-    {
-        //  SPACE
-        keyId = 26;
-    }
-    else if(keyCode == "enter")
-    {
-        //  ENTER
-        keyId = 27;
-    }
-    else if(keyCode == "esc")
-    {
-        //  ESC
-        keyId = 28;
-    }
-    else if(keyCode == "backspace")
-    {
-        //  BACKSPACE
-        keyId = 29;
-    }
-    else
-    {
-        for (var i = 0; i < keySetArray.length; i++) {
-            if(keySetArray[i] == keyCode) keyId = i;
-        }
-    }
+    //console.log(keyCode);
+    if(keyCode == "arrowright")keyCode = "d";
+    else if(keyCode == "arrowleft")keyCode = "a";
+    else if(keyCode == "arrowup")keyCode = "w";
+    else if(keyCode == "arrowdown")keyCode = "s";
+    if(keyCode == "a"){keyId = 0;}
+    else if(keyCode == "b"){keyId = 1;}
+    else if(keyCode == "c"){keyId = 2;}
+    else if(keyCode == "d"){keyId = 3;}
+    else if(keyCode == "e"){keyId = 4;}
+    else if(keyCode == "f"){keyId = 5;}
+    else if(keyCode == "g"){keyId = 6;}
+    else if(keyCode == "h"){keyId = 7;}
+    else if(keyCode == "i"){keyId = 8;}
+    else if(keyCode == "j"){keyId = 9;}
+    else if(keyCode == "k"){keyId = 10;}
+    else if(keyCode == "l"){keyId = 11;}
+    else if(keyCode == "m"){keyId = 12;}
+    else if(keyCode == "n"){keyId = 13;}
+    else if(keyCode == "o"){keyId = 14;}
+    else if(keyCode == "p"){keyId = 15;}
+    else if(keyCode == "q"){keyId = 16;}
+    else if(keyCode == "r"){keyId = 17;}
+    else if(keyCode == "s"){keyId = 18;}
+    else if(keyCode == "t"){keyId = 19;}
+    else if(keyCode == "u"){keyId = 20;}
+    else if(keyCode == "v"){keyId = 21;}
+    else if(keyCode == "w"){keyId = 22;}
+    else if(keyCode == "x"){keyId = 23;}
+    else if(keyCode == "y"){keyId = 24;}
+    else if(keyCode == "z"){keyId = 25;}
+    else if(keyCode == "enter"){keyId = 27;}
+    else if(keyCode == "esc"){keyId = 28;}
+    else if(keyCode == "backspace"){keyId = 29;}
     return keyId;
 }
 function GetKeyDown(keyCode)
 {
-    var keyId = 0;
-    keyId = GetKeyId(keyCode);
-    if(keyDownArray[keyId] == undefined) return false;
+    var keyId = GetKeyId(keyCode);
+    console.log(keyDownArray[keyId]);
+    if(keyDownArray[keyId] == undefined)
+    {
+        return false;
+    }
     return keyDownArray[keyId];
 }
 function GetLastLetterKeyDown(reset)
@@ -220,7 +230,7 @@ function GetLastLetterKeyDown(reset)
     if(reset) lastLetterKeyDown = "";
     return key;
 }
-function AppendStringWithInput(text)
+function AppendStringWithInput(text, max)
 {
     var newText = text;
     var newLetter = GetLastLetterKeyDown(true);
@@ -230,7 +240,10 @@ function AppendStringWithInput(text)
     }
     else
     {
-        newText += newLetter;
+        if(newText.length < max)
+        {
+            newText += newLetter;
+        }
     }
     return newText;
 }
@@ -244,10 +257,11 @@ function Update()
     }
     else if(gameState == "CHOOSING_NAME")
     {
-        playerName = AppendStringWithInput(playerName);
+        playerName = AppendStringWithInput(playerName, 10);
         nickname_text.SetText(playerName);
-
-        //EnterGameState("CHOOSING_ACTION");
+        if(playerName.length >= 1) submit_name_btn.Enable(true);
+        else submit_name_btn.Enable(false);
+        submit_name_btn.Hover(true);        
     }
     else if(gameState == "CHOOSING_ACTION")
     {
@@ -295,14 +309,13 @@ function EnterGameState(state)
         EnableAllObjects(false);
         choose_nickname_text.Enable(true);
         nickname_text.Enable(true);
-
     }
     else if(state == "CHOOSING_ACTION")
     {
         EnableAllObjects(false);
         attack_btn.Enable(true);
         defend_btn.Enable(true);
-        specia.Enable(true);
+        special_btn.Enable(true);
         evade_btn.Enable(true);
     }
 
@@ -442,7 +455,7 @@ class ButtonObject extends Object
     Enable(enable)
     {
         super.Enable(enable);
-        this.draw = enable;
+        this.draw = true;
         if(enable)
         {
             if(hoveredButton.enabled == false)
@@ -457,6 +470,14 @@ class ButtonObject extends Object
         if(this.enabled)
         {
             super.Update();
+
+            if(this.hovered)
+            {
+                if(GetKeyDown("enter"))
+                {
+                    this.Press();
+                }
+            }
         }
     }
 
@@ -477,11 +498,22 @@ class ButtonObject extends Object
         this.hovered = hover;
     }
 
+    Press()
+    {
+        CallButtonFunction(this.functionString);
+    }
+
+    SetFunction(functionString)
+    {
+        this.functionString = functionString;
+        console.log("Set Button " + this.name + " Function : " + this.functionString);
+    }
+
     Render()
     {
         if(this.draw)
         {
-            context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
+            context.clearRect(this.pos.x - 2, this.pos.y - 2,this.width + 4,this.height + 4);
 
             if(this.enabled)
             {
@@ -498,6 +530,15 @@ class ButtonObject extends Object
 
             this.draw = false;
         }
+    }
+}
+
+function CallButtonFunction(functionString)
+{
+    console.log(this.functionString);
+    if(functionString == "SUBMITNAME")
+    {
+        EnterGameState("CHOOSING_ACTION");
     }
 }
 
@@ -543,7 +584,6 @@ class TextObject extends Object
         if(this.draw)
         {
             context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
-            console.log("CLEAR");
             if(this.enabled)
             {
                 renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", this.colour, this.fontSize));
