@@ -96,11 +96,12 @@ function CreateObjects()
 {
     all_Objects = new Array();
 
-    //  CONNECTION PAGE OBJECTS
+    //  NAME SELECTION PAGE OBJECTS
     choose_nickname_text = new TextObject(new Vector2(400,280), 0,0,"CHOOSE A NAME", 25, "white");
     nickname_text = new TextObject(new Vector2(0,320), 800,40,"", 25, "white");
     submit_name_btn = new ButtonObject(new Vector2(300,450), 200,50,"ENTER", 25);
     submit_name_btn.SetFunction("SUBMITNAME");
+    submit_name_btn.name = "submit_name_btn";
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_2_img);
@@ -213,7 +214,6 @@ function GetKeyId(keyCode)
 function GetKeyDown(keyCode)
 {
     var keyId = GetKeyId(keyCode);
-    console.log(keyDownArray[keyId]);
     if(keyDownArray[keyId] == undefined)
     {
         return false;
@@ -261,9 +261,9 @@ function Update()
     }
     else if(gameState == "CHOOSING_ACTION")
     {
+        console.log(submit_name_btn.enabled + " , " + submit_name_btn.draw + " , " + submit_name_btn.clear)
         if((hoveredButton != attack_btn) && (hoveredButton != defend_btn) && (hoveredButton != special_btn) && (hoveredButton != evade_btn))
         {
-            console.log(hoveredButton);
             attack_btn.Hover(true);
         }
 
@@ -302,17 +302,18 @@ function EnterGameState(state)
 
     if(state == "CHOOSING_NAME")
     {
-        EnableAllObjects(false);
+        DisableActiveObjects();
         choose_nickname_text.Enable(true);
         nickname_text.Enable(true);
     }
     else if(state == "CHOOSING_ACTION")
     {
-        EnableAllObjects(false);
+        DisableActiveObjects();
         attack_btn.Enable(true);
         defend_btn.Enable(true);
         special_btn.Enable(true);
         evade_btn.Enable(true);
+        attack_btn.Hover(true);
     }
 
     gameState = state;
@@ -321,8 +322,17 @@ function EnterGameState(state)
 
 function EnableAllObjects(enable)
 {
-    for (var i = 0; i < all_Objects.length; i++) {
+    for (var i = 0; i < all_Objects.length; i++)
+    {
         all_Objects[i].Enable(enable);
+    }
+}
+function DisableActiveObjects()
+{
+    for (var i = 0; i < all_Objects.length; i++)
+    {
+        if(all_Objects[i].enabled)
+            all_Objects[i].Enable(false);
     }
 }
 
@@ -363,7 +373,19 @@ class Object
 
     Enable(enable)
     {
+        if(this.enabled == enable) return;
+
         this.enabled = enable;
+        this.clear = true;
+        this.draw = enable;
+        if(enable == true)
+        {
+            console.log("Enabled Object : " + this.name);
+        }
+        else
+        {
+           console.log("Disabled Object : " + this.name); 
+        }
     }
 
     Update()
@@ -393,6 +415,7 @@ class ImageObject extends Object
     }
     Enable(enable)
     {
+        if(this.enabled == enable) return;
         super.Enable(enable);
         this.draw = enable;
     }
@@ -446,15 +469,27 @@ class ButtonObject extends Object
 
     Enable(enable)
     {
-        super.Enable(enable);
-        this.draw = true;
-        if(enable)
+        if(enable == true)
         {
-            if(hoveredButton.enabled == false)
+            if(enable != this.enabled)
             {
-                this.Hover();
+                this.draw = true;
+                if(hoveredButton.enabled == false)
+                {
+                    this.Hover();
+                }
             }
         }
+        else
+        {
+            if(enable != this.enabled)
+            {
+                this.draw = false;
+                this.clear = true;
+                this.Hover(false);
+            } 
+        }
+        this.enabled = enable;
     }
 
     Update()
@@ -485,7 +520,16 @@ class ButtonObject extends Object
         }
         if(hover != this.hovered)
         {
-            this.draw = true;
+            if(this.enabled)
+            {
+                this.draw = true;
+                this.clear = true;
+            }
+            else
+            {
+                this.draw = false;
+                this.clear = true;
+            }
         }
         this.hovered = hover;
     }
@@ -503,11 +547,15 @@ class ButtonObject extends Object
 
     Render()
     {
-        if(this.draw)
+        if(this.clear)
         {
-            context.clearRect(this.pos.x - 2, this.pos.y - 2,this.width + 4,this.height + 4);
-
-            if(this.enabled)
+            context.clearRect(this.pos.x - 2, this.pos.y - 2, this.width + 4, this.height + 4);
+            this.clear = false;
+            console.log("CLEARED : " + this.name);
+        }
+        if(this.enabled == true)
+        {
+            if(this.draw == true)
             {
                 renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
                 if(this.hovered)
@@ -518,16 +566,15 @@ class ButtonObject extends Object
                 {
                     renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
                 }
-            }
 
-            this.draw = false;
+                this.draw = false;
+            }
         }
     }
 }
 
 function CallButtonFunction(functionString)
 {
-    console.log(this.functionString);
     if(functionString == "SUBMITNAME")
     {
         EnterGameState("CHOOSING_ACTION");
@@ -544,14 +591,15 @@ class TextObject extends Object
         this.text = text;
         this.fontSize = fontSize;
         this.colour = colour;
+        this.clear = true;
         this.draw = true;
         rendererTexts.push(this);
     }
 
     Enable(enable)
     {
+        if(this.enabled == enable) return;
         super.Enable(enable);
-        this.draw = true;
     }
 
     SetText(text)
@@ -559,6 +607,7 @@ class TextObject extends Object
         if(text != this.text)
         {
             this.text = text;
+            this.clear = true;
             this.draw = true;
         }
     }
@@ -573,9 +622,13 @@ class TextObject extends Object
 
     Render()
     {
-        if(this.draw)
+        if(this.clear)
         {
             context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
+            this.clear = false;
+        }
+        if(this.draw)
+        {
             if(this.enabled)
             {
                 renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", this.colour, this.fontSize));
