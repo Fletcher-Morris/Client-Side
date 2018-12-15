@@ -150,7 +150,7 @@ function ManageKey(e, down)
     {
         if(keyPrevArray[keyId] == false)
         {
-           keyDownArray[keyId] = false;
+           keyDownArray[keyId] = true;
            if(keySetArray[keyId] != "enter")
             {
                 if(keySetArray[keyId] != "esc")
@@ -161,17 +161,13 @@ function ManageKey(e, down)
             console.log("KEY " + keySetArray[keyId] + " : DOWN");
             keyPrevArray[keyId] = true;
         }
-        else
-        {
-            //console.log(keyPrevArray[keyId]);
-        }
     }
     else
     {
         if(keyPrevArray[keyId] == true)
         {
             keyDownArray[keyId] = false;
-            keyDownArray[keyId] = true;
+            keyPrevArray[keyId] = false;
         }
     }
 }
@@ -271,14 +267,14 @@ function Update()
             attack_btn.Hover(true);
         }
 
-        if(GetKeyDown("d"))
+        if(GetKeyDown("arrowright"))
         {
             if(hoveredButton == attack_btn) hoveredButton = defend_btn;
             else if(hoveredButton == defend_btn) hoveredButton = special_btn;
             else if(hoveredButton == special_btn) hoveredButton = evade_btn;
             else if(hoveredButton == evade_btn) hoveredButton = attack_btn;
         }
-        else if(GetKeyDown("a"))
+        else if(GetKeyDown("arrowleft"))
         {
             if(hoveredButton == attack_btn) hoveredButton = evade_btn;
             else if(hoveredButton == defend_btn) hoveredButton = attack_btn;
@@ -340,11 +336,7 @@ function Render()
 //  RESET INPUTS TO FALSE
 function FixInput()
 {
-    rightDown = false;
-    leftDown = false;
-    upDown = false;
-    downDown = false;
-    submitDown = false;
+    keyDownArray = Array(30).fill(false);
 }
 
 //  A SIMPLE CLASS FOR STORING POSITIONS
