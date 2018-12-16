@@ -43,6 +43,9 @@ var attack_icon;
 var defend_btn;
 var special_btn;
 var evade_btn;
+var attack_choice_btns = [];
+var defend_choice_btns = [];
+var special_choice_btns = [];
 var player_1_sprite;
 var player_2_sprite;
 var player_3_sprite;
@@ -61,6 +64,7 @@ var keySetArray = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","
 var keyDownArray = [];
 var keyHeldArray = [];
 var keyPrevArray = [];
+var buttonPressedThisFrame = true;
 
 
 //  GAME STUFF
@@ -108,25 +112,33 @@ function CreateObjects()
     player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_3_img);
     player_4_sprite = new ImageObject("player_4", new Vector2(650,250), wizard_4_img);
     attack_btn = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
+    attack_btn.SetFunction("CHOOSING_ATTACK");
     defend_btn = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
+    defend_btn.SetFunction("CHOOSING_DEFEND");
     special_btn = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
+    special_btn.SetFunction("CHOOSING_SPECIAL");
     evade_btn = new ButtonObject(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
+    evade_btn.SetFunction("CHOOSING_EVADE");
     hoveredButton = attack_btn;
 
-    /*
-    for (var i = 0; i < attackSpells.length; i++) {
-        var spellButton = new Button(new Vector2(200, i*50), 150, 50, attackSpells[i].name.toUpperCase(), 20);
+    for (var i = 0; i < attackSpells.length; i++)
+    {
+        var spellButton = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, attackSpells[i].name.toUpperCase(), 20);
+        attack_choice_btns.push(spellButton);
+        spellButton.Enable(false);
     }
-    for (var i = 0; i < defendSpells.length; i++) {
-        var spellButton = new Button(new Vector2(350, i*50), 150, 50, defendSpells[i].name.toUpperCase(), 20);
+    for (var i = 0; i < defendSpells.length; i++)
+    {
+        var spellButton = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, defendSpells[i].name.toUpperCase(), 20);
+        defend_choice_btns.push(spellButton);
+        spellButton.Enable(false);
     }
-    for (var i = 0; i < specialSpells.length; i++) {
-        var spellButton = new Button(new Vector2(500, i*50), 150, 50, specialSpells[i].name.toUpperCase(), 20);
+    for (var i = 0; i < specialSpells.length; i++)
+    {
+        var spellButton = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, specialSpells[i].name.toUpperCase(), 20);
+        special_choice_btns.push(spellButton);
+        spellButton.Enable(false);
     }
-    for (var i = 0; i < evadeSpells.length; i++) {
-        var spellButton = new Button(new Vector2(650, i*50), 150, 50, evadeSpells[i].name.toUpperCase(), 20);
-    }
-    */
 }
 
 //  HANDLE KEY-DOWN EVENTS
@@ -247,6 +259,8 @@ function AppendStringWithInput(text, max)
 //  UPDATE OBJECTS IN THE SCENE
 function Update()
 {
+    buttonPressedThisFrame = false;
+
     if(gameState == "START")
     {
         EnterGameState("CHOOSING_NAME");
@@ -261,7 +275,7 @@ function Update()
     }
     else if(gameState == "CHOOSING_ACTION")
     {
-        console.log(submit_name_btn.enabled + " , " + submit_name_btn.draw + " , " + submit_name_btn.clear)
+        //console.log(submit_name_btn.enabled + " , " + submit_name_btn.draw + " , " + submit_name_btn.clear)
         if((hoveredButton != attack_btn) && (hoveredButton != defend_btn) && (hoveredButton != special_btn) && (hoveredButton != evade_btn))
         {
             attack_btn.Hover(true);
@@ -287,6 +301,95 @@ function Update()
         special_btn.Hover(hoveredButton == special_btn);
         evade_btn.Hover(hoveredButton == evade_btn);
     }
+    else if(gameState == "CHOOSING_ATTACK")
+    {
+        var b = 0;
+        for(var i = 0; i < attack_choice_btns.length; i++)
+        {
+            if(attack_choice_btns[i] == hoveredButton) b = i;
+        }
+
+        if(GetKeyDown("arrowup"))
+        {
+            b++;
+            if(b >= attack_choice_btns.length) b = 0;
+            attack_choice_btns[b].Hover(true);
+        }
+        else if(GetKeyDown("arrowdown"))
+        {
+            b--;
+            if(b < 0) b = attack_choice_btns.length - 1;
+            attack_choice_btns[b].Hover(true);
+        }
+        else if(GetKeyDown("arrowright"))
+        {
+            defend_btn.Hover(true);
+            defend_btn.Press();
+        }
+        else if(GetKeyDown("arrowleft"))
+        {
+            evade_btn.Hover(true);
+            evade_btn.Press();
+        }
+    }
+    else if(gameState == "CHOOSING_DEFEND")
+    {
+        var b = 0;
+        for(var i = 0; i < defend_choice_btns.length; i++)
+        {
+            if(defend_choice_btns[i] == hoveredButton) b = i;
+        }
+
+        if(GetKeyDown("arrowup"))
+        {
+            b++;
+            if(b >= defend_choice_btns.length) b = 0;
+            defend_choice_btns[b].Hover(true);
+        }
+        else if(GetKeyDown("arrowdown"))
+        {
+            b--;
+            if(b < 0) b = defend_choice_btns.length - 1;
+            defend_choice_btns[b].Hover(true);
+        }
+        else if(GetKeyDown("arrowright"))
+        {
+            special_btn.Press();
+        }
+        else if(GetKeyDown("arrowleft"))
+        {
+            attack_btn.Press();
+        }
+    }
+    else if(gameState == "CHOOSING_SPECIAL")
+    {
+        var b = 0;
+        for(var i = 0; i < special_choice_btns.length; i++)
+        {
+            if(special_choice_btns[i] == hoveredButton) b = i;
+        }
+
+        if(GetKeyDown("arrowup"))
+        {
+            b++;
+            if(b >= special_choice_btns.length) b = 0;
+            special_choice_btns[b].Hover(true);
+        }
+        else if(GetKeyDown("arrowdown"))
+        {
+            b--;
+            if(b < 0) b = special_choice_btns.length - 1;
+            special_choice_btns[b].Hover(true);
+        }
+        else if(GetKeyDown("arrowright"))
+        {
+            evade_btn.Press();
+        }
+        else if(GetKeyDown("arrowleft"))
+        {
+            defend_btn.Press();
+        }
+    }
     
     for (var i = 0; i < all_Objects.length; i++)
     {
@@ -298,13 +401,19 @@ function Update()
 
 function EnterGameState(state)
 {
-    if(state == gameState) return;
+    if(state == gameState)
+    {
+        console.log("GAMESTATE IS ALREADY '" + state + "'");
+        return;
+    }
+    var isState = false;
 
     if(state == "CHOOSING_NAME")
     {
         DisableActiveObjects();
         choose_nickname_text.Enable(true);
         nickname_text.Enable(true);
+        isState = true;
     }
     else if(state == "CHOOSING_ACTION")
     {
@@ -314,10 +423,42 @@ function EnterGameState(state)
         special_btn.Enable(true);
         evade_btn.Enable(true);
         attack_btn.Hover(true);
+        isState = true;
+    }
+    else if(state == "CHOOSING_ATTACK")
+    {
+        EnableAttackOptionObjects(true);
+        EnableDefendOptionObjects(false);
+        EnableSpecialOptionObjects(false);
+        attack_choice_btns[0].Hover(true);
+        isState = true;
+    }
+    else if(state == "CHOOSING_DEFEND")
+    {
+        EnableAttackOptionObjects(false);
+        EnableDefendOptionObjects(true);
+        EnableSpecialOptionObjects(false);
+        defend_choice_btns[0].Hover(true);
+        isState = true;
+    }
+    else if(state == "CHOOSING_SPECIAL")
+    {
+        EnableAttackOptionObjects(false);
+        EnableDefendOptionObjects(false);
+        EnableSpecialOptionObjects(true);
+        defend_choice_btns[0].Hover(true);
+        isState = true;
     }
 
-    gameState = state;
-    console.log(("ENTERED GAME STATE : ") + gameState);
+    if(isState)
+    {
+        gameState = state;
+        console.log(("ENTERED GAME STATE : ") + gameState);
+    }
+    else
+    {
+        console.log("'" + state + "' IS NOT A STATE");
+    }
 }
 
 function EnableAllObjects(enable)
@@ -331,8 +472,28 @@ function DisableActiveObjects()
 {
     for (var i = 0; i < all_Objects.length; i++)
     {
-        if(all_Objects[i].enabled)
-            all_Objects[i].Enable(false);
+        all_Objects[i].Enable(false);
+    }
+}
+function EnableAttackOptionObjects(enable)
+{
+    for (var i = 0; i < attack_choice_btns.length; i++)
+    {
+        attack_choice_btns[i].Enable(enable);
+    }
+}
+function EnableDefendOptionObjects(enable)
+{
+    for (var i = 0; i < defend_choice_btns.length; i++)
+    {
+        defend_choice_btns[i].Enable(enable);
+    }
+}
+function EnableSpecialOptionObjects(enable)
+{
+    for (var i = 0; i < special_choice_btns.length; i++)
+    {
+        special_choice_btns[i].Enable(enable);
     }
 }
 
@@ -500,7 +661,7 @@ class ButtonObject extends Object
 
             if(this.hovered)
             {
-                if(GetKeyDown("enter"))
+                if(GetKeyDown("enter") && buttonPressedThisFrame == false)
                 {
                     this.Press();
                 }
@@ -536,6 +697,7 @@ class ButtonObject extends Object
 
     Press()
     {
+        buttonPressedThisFrame = true;
         CallButtonFunction(this.functionString);
     }
 
@@ -551,7 +713,7 @@ class ButtonObject extends Object
         {
             context.clearRect(this.pos.x - 2, this.pos.y - 2, this.width + 4, this.height + 4);
             this.clear = false;
-            console.log("CLEARED : " + this.name);
+            //console.log("CLEARED : " + this.name);
         }
         if(this.enabled == true)
         {
@@ -575,9 +737,26 @@ class ButtonObject extends Object
 
 function CallButtonFunction(functionString)
 {
+    console.log("Trying to call function '" + functionString + "'");
     if(functionString == "SUBMITNAME")
     {
         EnterGameState("CHOOSING_ACTION");
+    }
+    else if(functionString == "CHOOSING_ATTACK")
+    {
+        EnterGameState("CHOOSING_ATTACK");
+    }
+    else if(functionString == "CHOOSING_DEFEND")
+    {
+        EnterGameState("CHOOSING_DEFEND");
+    }
+    else if(functionString == "CHOOSING_SPECIAL")
+    {
+        EnterGameState("CHOOSING_SPECIAL");
+    }
+    else if(functionString == "CHOOSING_EVADE")
+    {
+
     }
 }
 
