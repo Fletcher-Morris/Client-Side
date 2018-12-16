@@ -954,3 +954,17 @@ class Renderer
         }
     }
 }
+
+
+
+
+//  NETWORKING STUFF
+
+function ConnectToServer(address, playerName)
+{
+    
+}
+function SendMessageToServer(message)
+{
+
+}
