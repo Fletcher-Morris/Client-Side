@@ -22,10 +22,7 @@ function SendMessageToPlayer(player, message)
 }
 function SendMessageToAll(message)
 {
-	for(int i = 0; i < connectedPlayers.length; i++)
-	{
-		SendMessageToPlayer(connectedPlayers[i], message);
-	}
+	
 }
 
 
