@@ -1,12 +1,17 @@
+
+
+//  NETWORK STUFF
+var serverAddress = 'http://localhost';
+var serverPort = 5000;
+var socket;
+
+
+//  CANVAS SUFF
 var canvas;
 var context;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 const FPS_LIMIT = 30;
-
-var img = new Image();
-img.src = 'images/test_img.png';
-var testImage
 
 
 //  LOADED SPELLS
@@ -75,6 +80,8 @@ var playerName = "";
 
 window.addEventListener("load", function()
 {
+    SetUpNetworking();
+
     document.addEventListener('keydown', KeyDown, false);
     document.addEventListener('keyup', KeyUp, false);
     canvas = document.getElementById('MainCanvas');
@@ -95,6 +102,12 @@ window.addEventListener("load", function()
     }
 
 }, false);
+
+function SetUpNetworking()
+{
+    socket = io(serverAddress + ":" + serverPort);
+    socket.on('message', function(data) {console.log(data);});
+}
 
 function CreateObjects()
 {
