@@ -31,6 +31,11 @@ io.on('connection', function(socket) {
 	{
 		GetPlayerBySocket(socket).name = name;
 		console.log("PLAYER " + GetPlayerBySocket(socket).id + "'s NAME IS : " + name + ".");
+		if(connectedPlayers == 4)
+		{
+			waitingForPlayers = false;
+			StartGame();
+		}
 	});
 
 });
@@ -120,12 +125,6 @@ function ConnectPlayer(socket)
 			console.log("Something went wrong connecting the player!");
 			socket.emit('refuse connection', "Server Error");
 		}
-
-		if(connectedPlayers == 4)
-		{
-			waitingForPlayers = false;
-			StartGame();
-		}
 	}
 }
 
@@ -184,9 +183,9 @@ class Player
 {
 	constructor(socket, id)
 	{
+		this.name = "";
 		this.health = 100;
 		this.mana = 100;
-		this.connected = true;
 		this.socket = socket;
 		this.id = id;
 		this.timeout = 5;
@@ -220,4 +219,13 @@ function StartGame()
 {
 	console.log("GAME STARTED!");
 	SendToPlayers('start game');
+
+	var nameString = "";
+	for(var i = 0; i < 4; i++)
+	{
+		nameString += GetPlayerById(i + 1).name;
+		if(i < 3) nameString += "_";
+	}
+	SendToPlayers('player names', nameString)
+	console.log(nameString);
 }

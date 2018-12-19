@@ -8,6 +8,7 @@ var networkState = "OFFLINE";
 var connected = false;
 var myId = 0;
 var connectedPlayers = 0;
+var playerData;
 
 
 //  CANVAS SUFF
@@ -126,6 +127,24 @@ function SetUpNetworking()
     {
         EnterGameState("CHOOSING_ACTION");
     });
+    socket.on('player names', function(nameString)
+    {
+        var names = nameString.split("_");
+        playerData = new Array();
+        playerData.push(new Player(names[0]));
+        playerData.push(new Player(names[1]));
+        playerData.push(new Player(names[2]));
+        playerData.push(new Player(names[3]));
+    });
+}
+
+class Player
+{
+    constructor(name)
+    {
+        this.name = name;
+        console.log("Created Player : " + this.name);
+    }
 }
 
 function CreateObjects()
