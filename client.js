@@ -4,8 +4,10 @@
 var serverAddress = 'http://localhost';
 var serverPort = 5000;
 var socket;
+var networkState = "OFFLINE";
 var connected = false;
 var myId = 0;
+var connectedPlayers = 0;
 
 
 //  CANVAS SUFF
@@ -45,6 +47,7 @@ var all_Objects = [];
 var choose_nickname_text;
 var nickname_text;
 var submit_name_btn;
+var server_text_message;
 var attack_btn;
 var attack_icon;
 var defend_btn;
@@ -108,11 +111,16 @@ function SetUpNetworking()
     socket = io(serverAddress + ":" + serverPort);
     socket.on('marco', function() {socket.emit('polo', function(data){});});
     socket.on('message', function(data) {console.log(data);});
-    socket.on('refuse connection', function(reason){console.log("Connection To Server Refused, Reason : " + reason);})
+    socket.on('refuse connection', function(reason)
+    {
+        console.log("Connection To Server Refused, Reason : " + reason);
+        EnterGameState("CONNECTION_REFUSED");
+    })
     socket.on('confirm name', function(id)
     {
         myId = id;
         socket.emit('name is', playerName);
+        EnterGameState("WAITING_FOR_PLAYERS");
     });
 }
 
@@ -126,6 +134,8 @@ function CreateObjects()
     submit_name_btn = new ButtonObject(new Vector2(300,450), 200,50,"ENTER", 25);
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
+
+    server_text_message = new TextObject(new Vector2(400,300), 0,0,"", 25, "white");
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_2_img);
@@ -426,14 +436,27 @@ function EnterGameState(state)
         console.log("GAMESTATE IS ALREADY '" + state + "'");
         return;
     }
-    var isState = false;
+    var isState = true;
 
     if(state == "CHOOSING_NAME")
     {
         DisableActiveObjects();
         choose_nickname_text.Enable(true);
         nickname_text.Enable(true);
-        isState = true;
+    }
+    else if(state == "WAITING_FOR_PLAYERS")
+    {
+        EnableAllObjects(false);
+        ClearAll();
+        server_text_message.text = "WAITING FOR PLAYERS (" + connectedPlayers + "/4)";
+        server_text_message.Enable(true);
+    }
+    else if(state == "CONNECTION_REFUSED")
+    {
+        EnableAllObjects(false);
+        ClearAll();
+        server_text_message.text = "CONNECTION REFUSED";
+        server_text_message.Enable(true); 
     }
     else if(state == "CHOOSING_ACTION")
     {
@@ -443,7 +466,6 @@ function EnterGameState(state)
         special_btn.Enable(true);
         evade_btn.Enable(true);
         attack_btn.Hover(true);
-        isState = true;
     }
     else if(state == "CHOOSING_ATTACK")
     {
@@ -451,7 +473,6 @@ function EnterGameState(state)
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(false);
         attack_choice_btns[0].Hover(true);
-        isState = true;
     }
     else if(state == "CHOOSING_DEFEND")
     {
@@ -459,7 +480,6 @@ function EnterGameState(state)
         EnableDefendOptionObjects(true);
         EnableSpecialOptionObjects(false);
         defend_choice_btns[0].Hover(true);
-        isState = true;
     }
     else if(state == "CHOOSING_SPECIAL")
     {
@@ -467,7 +487,10 @@ function EnterGameState(state)
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(true);
         defend_choice_btns[0].Hover(true);
-        isState = true;
+    }
+    else
+    {
+        isState = false;
     }
 
     if(isState)
@@ -493,6 +516,13 @@ function DisableActiveObjects()
     for (var i = 0; i < all_Objects.length; i++)
     {
         all_Objects[i].Enable(false);
+    }
+}
+function ClearAll()
+{
+    for (var i = 0; i < all_Objects.length; i++)
+    {
+        all_Objects[i].clear = true;
     }
 }
 function EnableAttackOptionObjects(enable)
@@ -761,7 +791,6 @@ function CallButtonFunction(functionString)
     if(functionString == "SUBMITNAME")
     {
         SetUpNetworking();
-        EnterGameState("CHOOSING_ACTION");
     }
     else if(functionString == "CHOOSING_ATTACK")
     {

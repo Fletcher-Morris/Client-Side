@@ -66,6 +66,7 @@ setInterval(function()
 function StartServer()
 {
 	console.log('Starting server on port ' + port);
+	waitingForPlayers = true;
 	connectedPlayers = 0;
 	player1 = undefined;
 	player2 = undefined;
@@ -115,8 +116,15 @@ function ConnectPlayer(socket)
 		}
 		else
 		{
+			//	SOMETHING IS NOT RIGHT
 			console.log("Something went wrong connecting the player!");
 			socket.emit('refuse connection', "Server Error");
+		}
+
+		if(connectedPlayers == 4)
+		{
+			waitingForPlayers = false;
+			StartGame();
 		}
 	}
 }
@@ -182,6 +190,7 @@ class Player
 	}
 }
 
+var waitingForPlayers = true;
 var connectedPlayers = 0;
 var player1;
 var player2;
@@ -196,4 +205,10 @@ function ConnectedPlayers()
 	if(player3 != undefined) result.push(player3);
 	if(player4 != undefined) result.push(player4);
 	return result;
+}
+
+
+function StartGame()
+{
+	console.log("GAME STARTED!");
 }
