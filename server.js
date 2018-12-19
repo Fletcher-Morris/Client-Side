@@ -193,12 +193,15 @@ class Player
 		this.socket = socket;
 		this.id = id;
 		this.timeout = 5;
+
 		this.dead = false;
+		this.defence = 0;
+		this.evadedNothing = true;
 	}
 
 	Polo()
 	{
-		this.timeout  = 5;
+		this.timeout = 5;
 	}
 
 	SetAction(act)
@@ -222,6 +225,11 @@ class Player
 	{
 		this.health -= amount;
 		if(this.health <= 0) this.Death();
+	}
+
+	Defend(amount)
+	{
+		this.defence += amount;
 	}
 
 	Death()
@@ -271,11 +279,24 @@ function ProccessRound()
 	var executionOrder;
 	var caster;
 	var target;
-	//	check for special spells
+	var spell;
+
+	//	Check for special spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
 		caster = GetPlayerById(i + 1);
-		if(caster.action.spell.type == "special")
+		spell = caster.action.spell;
+		if(spell.type == "special")
+		{
+			executionOrder.push(caster);
+		}
+	}
+	//	Check for defence spells
+	for(var i = 0; i < ConnectedPlayers().length; i++)
+	{
+		caster = GetPlayerById(i + 1);
+		spell = caster.action.spell;
+		if(spell.type == "defend")
 		{
 			executionOrder.push(caster);
 		}
@@ -283,7 +304,17 @@ function ProccessRound()
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
 		caster = GetPlayerById(i + 1);
-		if(caster.action.spell.type != "special")
+		spell = caster.action.spell;
+		if(spell.type == "attack")
+		{
+			executionOrder.push(caster);
+		}
+	}
+	for(var i = 0; i < ConnectedPlayers().length; i++)
+	{
+		caster = GetPlayerById(i + 1);
+		spell = caster.action.spell;
+		if(spell.type == "evade")
 		{
 			executionOrder.push(caster);
 		}
@@ -294,40 +325,77 @@ function ProccessRound()
 		{
 			caster = executionOrder[i];
 			target = GetPlayerById(caster.action.target);
-			if(caster.action.spell.type == "special")
+			spell = caster.action.spell;
+			if(spell.type == "special")
 			{
-				if(caster.action.spell.name == "boost")
+				if(spell.name == "boost")
 				{
 					//	Boost the target
 					target.boosted = true;
 				}
-				if(caster.action.spell.name == "heal")
+				if(spell.name == "heal")
 				{
 					//	Heal the target
 					target.Heal(caster.action.spell.effect);
 				}
 			}
-			else if(caster.action.spell.type == "attack")
+			if(spell.type == "defend")
 			{
-				if(target.action.type == "evade")
+				target.Defend(spell.effect);
+				if(caster == target)
+				{
+					console.log(caster.name + " increased their defence by" + spell.effect + " points!");
+				}
+				else
+				{
+					console.log(caster.name + " increased " + target.name + "'s defence by" + spell.effect + " points!");
+				}
+			}
+			else if(spell.type == "attack")
+			{
+				if(target.action.spell.type == "evade")
 				{
 					if(CoinFlip(target.action.effect / 1.0))
 					{
 						//	Evade fails
+						target.Damage(spell.effect);
+						console.log(target.name + " tried to evade " + caster.name + "'s spell but failed!");
+						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + spell.effect + " points!");
 					}
 					else
 					{
 						//	Evade succeedes
+						console.log(caster.name + " used '" + spell.name + "' on " + target.name + ", but " + target.name + " evaded!");
+					}
+					target.evadedNothing = false;
+				}
+				else if(target.defence > 0)
+				{
+					//	Target absorbs damage, if defence value exeeds attack value, difference is reflected back
+					if(target.defence > spell.effect)
+					{
+						//	Reflect
+						var reflectValue = target.defence - spell.effect;
+						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + reflectValue + " back towards them!");
+						caster.Damage(reflectValue);
 					}
 				}
-				else if(target.action.type == "defend")
+				else
 				{
-					//	target has priority
+					target.Damage(spell.effect);
+						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + spell.effect + " points!");
+				}
+			}
+			if(spell.type == "evade")
+			{
+				if(target.evadedNothing)
+				{
+					console.log(caster.name + " evaded nothing!");
 				}
 			}
 
 			//	Drain the cost of the spell from the caster's mana pool
-			caster.DrainMana(caster.action.spell.cost);
+			caster.DrainMana(spell.cost);
 		}
 	}
 }
