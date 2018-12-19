@@ -4,6 +4,9 @@ var http = require('http');
 var path = require('path');
 var socketIO = require('socket.io');
 
+var spellData = require('./server-spells.json');
+var loadedSpells = JSON.parse(JSON.stringify(spellData));
+
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
@@ -71,6 +74,7 @@ setInterval(function()
 function StartServer()
 {
 	console.log('Starting server on port ' + port);
+	LoadSpells();
 	waitingForPlayers = true;
 	connectedPlayers = 0;
 	player1 = undefined;
@@ -203,6 +207,7 @@ var player1; //	TEAM A
 var player2; // TEAM B
 var player3; // TEAM A
 var player4; // TEAM B
+var playerTurn = 0;
 
 function ConnectedPlayers()
 {
@@ -228,4 +233,35 @@ function StartGame()
 		if(i < 3) nameString += "_";
 	}
 	SendToPlayers('player names', nameString);
+}
+
+function ProccessRound(act1, act2, act3, act4)
+{
+	//	ACTS CONSIST OF CASTER, TARGET, AND SPELL
+
+	//	player 1
+	if(act1.spell == "attack")
+	{
+
+	}
+}
+
+function LoadSpells()
+{
+	console.log("\nLoaded Spells :");
+	for (var i = 0; i < loadedSpells.length; i++)
+	{		
+        console.log(loadedSpells[i]);
+    }
+}
+
+class Spell
+{
+    constructor(name, type, cost, effect)
+    {
+        this.name = name;
+        this.type = type;
+        this.cost = cost;
+        this.effect = effect;
+    }
 }
