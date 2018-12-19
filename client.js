@@ -106,8 +106,9 @@ window.addEventListener("load", function()
 function SetUpNetworking()
 {
     socket = io(serverAddress + ":" + serverPort);
-    socket.on('marco', function() {socket.emit('polo', function(data){});console.log("POLO");});
+    socket.on('marco', function() {socket.emit('polo', function(data){});});
     socket.on('message', function(data) {console.log(data);});
+    socket.on('refuse connection', function(reason){console.log("Connection To Server Refused, Reason : " + reason);})
     socket.on('confirm name', function(id)
     {
         myId = id;

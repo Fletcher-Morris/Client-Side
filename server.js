@@ -44,7 +44,6 @@ io.on('disconnect', function(socket) {
 setInterval(function()
 {
   io.sockets.emit('marco');
-  console.log("MARCO");
   var players = ConnectedPlayers();
   for(var i = 0; i < players.length; i++)
   {
@@ -53,7 +52,6 @@ setInterval(function()
 }, 1000);
 setInterval(function()
 {
-	console.log("CONNECTION TEST");
 	var players = ConnectedPlayers();
 	for(var i = 0; i < players.length; i++)
 	{
@@ -81,6 +79,7 @@ function ConnectPlayer(socket)
 	{
 		//	REFUSE
 		console.log("Refused New Player");
+		socket.emit('refuse connection', "Server Is Full");
 	}
 	else
 	{
@@ -117,6 +116,7 @@ function ConnectPlayer(socket)
 		else
 		{
 			console.log("Something went wrong connecting the player!");
+			socket.emit('refuse connection', "Server Error");
 		}
 	}
 }
@@ -179,7 +179,6 @@ class Player
 	Polo()
 	{
 		this.timeout  = 5;
-		console.log("POLO received from player " + this.id);
 	}
 }
 
