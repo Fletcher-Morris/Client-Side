@@ -4,6 +4,8 @@
 var serverAddress = 'http://localhost';
 var serverPort = 5000;
 var socket;
+var connected = false;
+var myId = 0;
 
 
 //  CANVAS SUFF
@@ -80,7 +82,6 @@ var playerName = "";
 
 window.addEventListener("load", function()
 {
-
     document.addEventListener('keydown', KeyDown, false);
     document.addEventListener('keyup', KeyUp, false);
     canvas = document.getElementById('MainCanvas');
@@ -101,6 +102,17 @@ window.addEventListener("load", function()
     }
 
 }, false);
+
+function SetUpNetworking()
+{
+    socket = io(serverAddress + ":" + serverPort);
+    socket.on('message', function(data) {console.log(data);});
+    socket.on('confirm name', function(id)
+        {
+            myId = id;
+            socket.emit('name is', playerName);
+        });
+}
 
 function CreateObjects()
 {
@@ -746,8 +758,7 @@ function CallButtonFunction(functionString)
     console.log("Trying to call function '" + functionString + "'");
     if(functionString == "SUBMITNAME")
     {
-        socket = io(serverAddress + ":" + serverPort);
-        socket.on('message', function(data) {console.log(data);});
+        SetUpNetworking();
         EnterGameState("CHOOSING_ACTION");
     }
     else if(functionString == "CHOOSING_ATTACK")
