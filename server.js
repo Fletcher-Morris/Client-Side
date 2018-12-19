@@ -199,10 +199,10 @@ class Player
 
 var waitingForPlayers = true;
 var connectedPlayers = 0;
-var player1;
-var player2;
-var player3;
-var player4;
+var player1; //	TEAM A
+var player2; // TEAM B
+var player3; // TEAM A
+var player4; // TEAM B
 
 function ConnectedPlayers()
 {
@@ -220,12 +220,12 @@ function StartGame()
 	console.log("GAME STARTED!");
 	SendToPlayers('start game');
 
+	//	SEND THE PLAYERS' NAMES TO EACH PLAYER
 	var nameString = "";
 	for(var i = 0; i < 4; i++)
 	{
 		nameString += GetPlayerById(i + 1).name;
 		if(i < 3) nameString += "_";
 	}
-	SendToPlayers('player names', nameString)
-	console.log(nameString);
+	SendToPlayers('player names', nameString);
 }
