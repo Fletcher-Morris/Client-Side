@@ -122,6 +122,10 @@ function SetUpNetworking()
         socket.emit('name is', playerName);
         EnterGameState("WAITING_FOR_PLAYERS");
     });
+    socket.on('start game', function(data)
+    {
+        EnterGameState("CHOOSING_ACTION");
+    });
 }
 
 function CreateObjects()

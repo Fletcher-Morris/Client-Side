@@ -43,7 +43,7 @@ io.on('disconnect', function(socket) {
 
 setInterval(function()
 {
-  io.sockets.emit('marco');
+  SendToPlayers('marco');
   var players = ConnectedPlayers();
   for(var i = 0; i < players.length; i++)
   {
@@ -167,6 +167,14 @@ function GetPlayerById(id)
 		return player4;
 	}
 }
+function SendToPlayers(command, message)
+{
+	var players = ConnectedPlayers();
+	for(var i = 0; i < players.length; i++)
+	{
+		GetPlayerById(i + 1).socket.emit(command, message);
+	}
+}
 
 
 
@@ -211,4 +219,5 @@ function ConnectedPlayers()
 function StartGame()
 {
 	console.log("GAME STARTED!");
+	SendToPlayers('start game');
 }
