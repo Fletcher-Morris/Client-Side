@@ -106,12 +106,13 @@ window.addEventListener("load", function()
 function SetUpNetworking()
 {
     socket = io(serverAddress + ":" + serverPort);
+    socket.on('marco', function() {socket.emit('polo', function(data){});console.log("POLO");});
     socket.on('message', function(data) {console.log(data);});
     socket.on('confirm name', function(id)
-        {
-            myId = id;
-            socket.emit('name is', playerName);
-        });
+    {
+        myId = id;
+        socket.emit('name is', playerName);
+    });
 }
 
 function CreateObjects()

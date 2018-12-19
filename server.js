@@ -22,6 +22,11 @@ io.on('connection', function(socket) {
 	console.log("Someone Connected");
 	ConnectPlayer(socket);
 
+	socket.on('polo', function(data)
+	{
+		GetPlayerBySocket(socket).Polo();
+	});
+
 	socket.on('name is', function(name)
 	{
 		GetPlayerBySocket(socket).name = name;
@@ -29,13 +34,35 @@ io.on('connection', function(socket) {
 	});
 
 });
+
 io.on('disconnect', function(socket) {
 	console.log("Someone disconnected @ " + socket);
 });
 
-setInterval(function() {
-  io.sockets.emit('message', 'hi!');
+
+
+setInterval(function()
+{
+  io.sockets.emit('marco');
+  console.log("MARCO");
+  var players = ConnectedPlayers();
+  for(var i = 0; i < players.length; i++)
+  {
+  	players[i].timeout --;
+  }
 }, 1000);
+setInterval(function()
+{
+	console.log("CONNECTION TEST");
+	var players = ConnectedPlayers();
+	for(var i = 0; i < players.length; i++)
+	{
+		if(players[i].timeout < 0)
+		{
+			console.log("PLAYER " + players[i].id + " HAS TIMED OUT!");
+		}
+	}
+}, 4000);
 
 
 function StartServer()
@@ -146,6 +173,13 @@ class Player
 		this.connected = true;
 		this.socket = socket;
 		this.id = id;
+		this.timeout = 5;
+	}
+
+	Polo()
+	{
+		this.timeout  = 5;
+		console.log("POLO received from player " + this.id);
 	}
 }
 
@@ -154,3 +188,13 @@ var player1;
 var player2;
 var player3;
 var player4;
+
+function ConnectedPlayers()
+{
+	var result = [];
+	if(player1 != undefined) result.push(player1);
+	if(player2 != undefined) result.push(player2);
+	if(player3 != undefined) result.push(player3);
+	if(player4 != undefined) result.push(player4);
+	return result;
+}
