@@ -193,11 +193,42 @@ class Player
 		this.socket = socket;
 		this.id = id;
 		this.timeout = 5;
+		this.dead = false;
 	}
 
 	Polo()
 	{
 		this.timeout  = 5;
+	}
+
+	SetAction(act)
+	{
+		this.action = act;
+	}
+
+	Heal(amount)
+	{
+		this.health += amount;
+		if(this.health >= 100) this.health = 100;
+	}
+
+	DrainMana(amount)
+	{
+		this.mana -= amount;
+		if(this.mana <= 0) this.mana = 0;
+	}
+
+	Damage(amount)
+	{
+		this.health -= amount;
+		if(this.health <= 0) this.Death();
+	}
+
+	Death()
+	{
+		this.health = 0;
+		this.dead = true;
+		console.log(this.name + " HAS RETIRED FROM WIZARDING");
 	}
 }
 
@@ -235,14 +266,69 @@ function StartGame()
 	SendToPlayers('player names', nameString);
 }
 
-function ProccessRound(act1, act2, act3, act4)
+function ProccessRound()
 {
-	//	ACTS CONSIST OF CASTER, TARGET, AND SPELL
-
-	//	player 1
-	if(act1.spell == "attack")
+	var executionOrder;
+	var caster;
+	var target;
+	//	check for special spells
+	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
+		caster = GetPlayerById(i + 1);
+		if(caster.action.spell.type == "special")
+		{
+			executionOrder.push(caster);
+		}
+	}
+	for(var i = 0; i < ConnectedPlayers().length; i++)
+	{
+		caster = GetPlayerById(i + 1);
+		if(caster.action.spell.type != "special")
+		{
+			executionOrder.push(caster);
+		}
+	}
+	for(var i = 0; i < executionOrder.length; i++)
+	{
+		if(caster.dead == false && target.dead == false)
+		{
+			caster = executionOrder[i];
+			target = GetPlayerById(caster.action.target);
+			if(caster.action.spell.type == "special")
+			{
+				if(caster.action.spell.name == "boost")
+				{
+					//	Boost the target
+					target.boosted = true;
+				}
+				if(caster.action.spell.name == "heal")
+				{
+					//	Heal the target
+					target.Heal(caster.action.spell.effect);
+				}
+			}
+			else if(caster.action.spell.type == "attack")
+			{
+				if(target.action.type == "evade")
+				{
+					if(CoinFlip(target.action.effect / 1.0))
+					{
+						//	Evade fails
+					}
+					else
+					{
+						//	Evade succeedes
+					}
+				}
+				else if(target.action.type == "defend")
+				{
+					//	target has priority
+				}
+			}
 
+			//	Drain the cost of the spell from the caster's mana pool
+			caster.DrainMana(caster.action.spell.cost);
+		}
 	}
 }
 
@@ -264,4 +350,18 @@ class Spell
         this.cost = cost;
         this.effect = effect;
     }
+}
+function GetSpell(spellName)
+{
+	for(var i = 0; i < loadedSpells.length; i++)
+	{
+		if(loadedSpells[i].name == spellName) return loadedSpells[i];
+	}
+}
+
+function CoinFlip(chance)
+{
+	var random = Math.random();
+	if(random >= chance) return true;
+	return false;
 }
