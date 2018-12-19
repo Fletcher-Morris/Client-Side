@@ -80,7 +80,6 @@ var playerName = "";
 
 window.addEventListener("load", function()
 {
-    SetUpNetworking();
 
     document.addEventListener('keydown', KeyDown, false);
     document.addEventListener('keyup', KeyUp, false);
@@ -102,12 +101,6 @@ window.addEventListener("load", function()
     }
 
 }, false);
-
-function SetUpNetworking()
-{
-    socket = io(serverAddress + ":" + serverPort);
-    socket.on('message', function(data) {console.log(data);});
-}
 
 function CreateObjects()
 {
@@ -753,6 +746,8 @@ function CallButtonFunction(functionString)
     console.log("Trying to call function '" + functionString + "'");
     if(functionString == "SUBMITNAME")
     {
+        socket = io(serverAddress + ":" + serverPort);
+        socket.on('message', function(data) {console.log(data);});
         EnterGameState("CHOOSING_ACTION");
     }
     else if(functionString == "CHOOSING_ATTACK")
@@ -966,18 +961,4 @@ class Renderer
             this.batchedTexts = [];
         }
     }
-}
-
-
-
-
-//  NETWORKING STUFF
-
-function ConnectToServer(address, playerName)
-{
-    
-}
-function SendMessageToServer(message)
-{
-
 }
