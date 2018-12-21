@@ -45,7 +45,6 @@ wizard_8_img.src = 'images/wizard_8_img.png';
 
 //  OBJECTS
 var all_Objects = [];
-var choose_nickname_text;
 var nickname_text;
 var submit_name_btn;
 var server_text_message;
@@ -152,13 +151,11 @@ function CreateObjects()
     all_Objects = new Array();
 
     //  NAME SELECTION PAGE OBJECTS
-    choose_nickname_text = new TextObject(new Vector2(400,280), 0,0,"CHOOSE A NAME", 25, "white");
-    nickname_text = new TextObject(new Vector2(0,320), 800,40,"", 25, "white");
+    server_text_message = new TextObject("server_message", new Vector2(400,280), 800, 50,"CHOOSE A NAME", 25, "white");
+    nickname_text = new TextObject("name_text", new Vector2(400,320), 400,40,"", 25, "white");
     submit_name_btn = new ButtonObject(new Vector2(300,450), 200,50,"ENTER", 25);
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
-
-    server_text_message = new TextObject(new Vector2(400,300), 0,0,"", 25, "white");
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_2_img);
@@ -464,12 +461,12 @@ function EnterGameState(state)
     if(state == "CHOOSING_NAME")
     {
         DisableActiveObjects();
-        choose_nickname_text.Enable(true);
+        server_text_message.Enable(true);
         nickname_text.Enable(true);
     }
     else if(state == "WAITING_FOR_PLAYERS")
     {
-        EnableAllObjects(false);
+        DisableActiveObjects();
         ClearAll();
         server_text_message.text = "WAITING FOR PLAYERS (" + connectedPlayers + "/4)";
         server_text_message.Enable(true);
@@ -509,7 +506,7 @@ function EnterGameState(state)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(true);
-        defend_choice_btns[0].Hover(true);
+        special_choice_btns[0].Hover(true);
     }
     else
     {
@@ -578,10 +575,7 @@ function Render()
 }
 
 //  RESET INPUTS TO FALSE
-function FixInput()
-{
-    keyDownArray = Array(30).fill(false);
-}
+function FixInput() {keyDownArray = Array(30).fill(false);}
 
 //  A SIMPLE CLASS FOR STORING POSITIONS
 class Vector2
@@ -607,11 +601,11 @@ class Object
 
     Enable(enable)
     {
-        if(this.enabled == enable) return;
-
         this.enabled = enable;
         this.clear = true;
         this.draw = enable;
+
+        if(this.enabled == enable) return;
         if(enable == true)
         {
             console.log("Enabled Object : " + this.name);
@@ -705,23 +699,12 @@ class ButtonObject extends Object
     {
         if(enable == true)
         {
-            if(enable != this.enabled)
-            {
-                this.draw = true;
-                if(hoveredButton.enabled == false)
-                {
-                    this.Hover();
-                }
-            }
         }
         else
         {
-            if(enable != this.enabled)
-            {
-                this.draw = false;
-                this.clear = true;
-                this.Hover(false);
-            } 
+            this.draw = false;
+            this.clear = true;
+            this.Hover(false);
         }
         this.enabled = enable;
     }
@@ -784,9 +767,8 @@ class ButtonObject extends Object
     {
         if(this.clear)
         {
-            context.clearRect(this.pos.x - 2, this.pos.y - 2, this.width + 4, this.height + 4);
+            context.clearRect(this.pos.x - 2, this.pos.y - 2, this.width + 2, this.height + 2);
             this.clear = false;
-            //console.log("CLEARED : " + this.name);
         }
         if(this.enabled == true)
         {
@@ -835,9 +817,9 @@ function CallButtonFunction(functionString)
 
 class TextObject extends Object
 {
-    constructor(pos, width, height, text, fontSize, colour)
+    constructor(name, pos, width, height, text, fontSize, colour)
     {
-        super(text, pos);
+        super(name, pos);
         this.width = width;
         this.height = height;
         this.text = text;
@@ -850,8 +832,11 @@ class TextObject extends Object
 
     Enable(enable)
     {
-        if(this.enabled == enable) return;
         super.Enable(enable);
+        if(enable == false)
+        {
+            this.clear = true;
+        }
     }
 
     SetText(text)
@@ -876,14 +861,14 @@ class TextObject extends Object
     {
         if(this.clear)
         {
-            context.clearRect(this.pos.x,this.pos.y,this.width,this.height);
+            context.clearRect(this.pos.x - (this.width / 2), this.pos.y  - (this.height / 2), this.width, this.height);
             this.clear = false;
         }
         if(this.draw)
         {
-            if(this.enabled)
+            if(this.enabled && this.text != "")
             {
-                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", this.colour, this.fontSize));
+                renderer.SubmitText(new RendererText(this.text, this.pos.x, this.pos.y, "center", this.colour, this.fontSize));
             }
 
             this.draw = false;
@@ -916,7 +901,7 @@ function LoadSpells()
             specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
         }
 
-        //console.log(newSpell);
+        console.log(newSpell);
     }
 }
 
