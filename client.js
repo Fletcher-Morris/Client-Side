@@ -732,6 +732,7 @@ class ButtonObject extends Object
     {
         if(enable == true)
         {
+            this.draw = true;
         }
         else
         {
@@ -800,12 +801,11 @@ class ButtonObject extends Object
     {
         if(this.clear)
         {
-            context.clearRect(this.pos.x - 2, this.pos.y - 2, this.width + 2, this.height + 2);
+            context.clearRect(this.pos.x - 4, this.pos.y - 4, this.width + 8, this.height + 8);
+            info += "</br>" + this.name;
             this.clear = false;
         }
-        if(this.enabled == true)
-        {
-            if(this.draw == true)
+        if(this.draw == true)
             {
                 renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
                 if(this.hovered)
@@ -819,7 +819,6 @@ class ButtonObject extends Object
 
                 this.draw = false;
             }
-        }
     }
 }
 
@@ -998,14 +997,14 @@ class Renderer
 
     Proccess()
     {
-        for (var i = 0; i < rendererButtons.length; i++)
-        {
-            rendererButtons[i].Render();
-        }
-
+        //context.clearRect(0, 0, 800, 600);
         for (var i = 0; i < rendererTexts.length; i++)
         {
             rendererTexts[i].Render();
+        }
+        for (var i = 0; i < rendererButtons.length; i++)
+        {
+            rendererButtons[i].Render();
         }
     }
 
@@ -1020,6 +1019,7 @@ class Renderer
         //  RENDER STROKES
         if(this.batchedStrokes.length >= 1)
         {
+            context.beginPath();
             for (var i = 0; i < this.batchedStrokes.length; i++)
             {
                 context.rect(this.batchedStrokes[i].pos.x,this.batchedStrokes[i].pos.y,this.batchedStrokes[i].width,this.batchedStrokes[i].height);
@@ -1027,6 +1027,7 @@ class Renderer
                 context.lineWidth = this.batchedStrokes[i].strokeWidth;
             }
             context.stroke();
+            context.closePath();
             this.batchedStrokes = [];
         }
 
@@ -1043,5 +1044,11 @@ class Renderer
             }
             this.batchedTexts = [];
         }
+
+
+        document.getElementById("info").innerHTML = info;
+        info = "Clearing :";
     }
 }
+
+var info = "Clearing :";
