@@ -6,7 +6,6 @@ var serverPort = 5000;
 var socket;
 var networkState = "OFFLINE";
 var connected = false;
-var myId = 0;
 var connectedPlayers = 0;
 var playerData;
 
@@ -82,7 +81,9 @@ var buttonPressedThisFrame = true;
 var gameState = "START";
 var hoveredButton = attack_btn;
 var playerName = "";
+var timeSinceStart = 0.0;
 var dotTimer = 0;
+var connectionTime;
 
 
 window.addEventListener("load", function()
@@ -120,18 +121,18 @@ function SetUpNetworking()
     })
     socket.on('confirm name', function(id)
     {
-        myId = id;
-        socket.emit('name is', playerName);
-        EnterGameState("WAITING_FOR_PLAYERS");
-    });
-    socket.on('start game', function(data)
-    {
-        EnterGameState("CHOOSING_ACTION");
+        connectionTime = timeSinceStart;
+        EnterGameState("CHOOSING_NAME");
     });
     socket.on('player count', function(count)
     {
         connectedPlayers = count;
         EnterGameState("WAITING_FOR_PLAYERS", true);
+    });
+    socket.on('queue length', function(count)
+    {
+        connectedPlayers = count;
+        EnterGameState("JOINING_QUEUE", true);
     });
     socket.on('player names', function(nameString)
     {
@@ -141,6 +142,10 @@ function SetUpNetworking()
         playerData.push(new Player(names[1]));
         playerData.push(new Player(names[2]));
         playerData.push(new Player(names[3]));
+    });
+    socket.on('start game', function(data)
+    {
+        EnterGameState("CHOOSING_ACTION");
     });
 }
 
@@ -316,11 +321,40 @@ function AppendStringWithInput(text, max)
 //  UPDATE OBJECTS IN THE SCENE
 function Update()
 {
+    timeSinceStart += 1.0/FPS_LIMIT;
+
     buttonPressedThisFrame = false;
 
     if(gameState == "START")
     {
-        EnterGameState("CHOOSING_NAME");
+        EnterGameState("CONNECTING_TO_SERVER");
+    }
+    else if(gameState == "CONNECTING_TO_SERVER")
+    {
+        dotTimer += 2.0/FPS_LIMIT;
+        var txt;
+        if(dotTimer <= 1.0)
+        {
+            txt = "- CONNECTING TO SERVER |";
+        }
+        else if(dotTimer <= 2.0)
+        {
+            txt = "\\ CONNECTING TO SERVER /";
+        }
+        else if(dotTimer <= 3.0)
+        {
+            txt = "| CONNECTING TO SERVER -";
+        }
+        else if(dotTimer <= 4.0)
+        {
+            txt = "/ CONNECTING TO SERVER \\";
+        }
+        else
+        {
+            dotTimer = 0.0;
+            txt = "- CONNECTING TO SERVER |";
+        }
+        server_text_message.SetText(txt);
     }
     else if(gameState == "CHOOSING_NAME")
     {
@@ -328,7 +362,12 @@ function Update()
         nickname_text.SetText(playerName);
         if(playerName.length >= 1) submit_name_btn.Enable(true);
         else submit_name_btn.Enable(false);
-        submit_name_btn.Hover(true);        
+        submit_name_btn.Hover(true);
+
+        if(timeSinceStart >= connectionTime + 20.0)
+        {
+            //  KICK FOR INACTIVITY
+        }       
     }
     else if(gameState == "WAITING_FOR_PLAYERS")
     {
@@ -492,11 +531,25 @@ function EnterGameState(state, force)
     }
     var isState = true;
 
-    if(state == "CHOOSING_NAME")
+    if(state == "CONNECTING_TO_SERVER")
     {
         DisableActiveObjects();
         server_text_message.Enable(true);
+        SetUpNetworking();
+    }
+    else if(state == "CHOOSING_NAME")
+    {
+        DisableActiveObjects();
+        server_text_message.text = "CHOOSE A NAME";
+        server_text_message.Enable(true);
         nickname_text.Enable(true);
+    }
+    else if(state == "JOINING_QUEUE")
+    {
+        DisableActiveObjects();
+        ClearAll();
+        server_text_message.text = "SERVER FULL (" + (connectedPlayers) + " IN QUEUE)";
+        server_text_message.Enable(true);
     }
     else if(state == "WAITING_FOR_PLAYERS")
     {
@@ -656,6 +709,14 @@ class Object
         {
 
         }
+    }
+
+    SetPosition(x, y)
+    {
+        this.pos.x = x;
+        this.pos.y = y;
+        this.clear = true;
+        if(this.enabled) this.draw = true;
     }
 }
 
@@ -833,7 +894,7 @@ function CallButtonFunction(functionString)
     console.log("Trying to call function '" + functionString + "'");
     if(functionString == "SUBMITNAME")
     {
-        SetUpNetworking();
+        socket.emit('name is', playerName);
     }
     else if(functionString == "CHOOSING_ATTACK")
     {

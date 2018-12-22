@@ -24,11 +24,12 @@ app.use('', express.static(__dirname));
 
 // Starts the server.
 server.listen(port, StartServer());
+var queuedPlayers;
 
 // Add the WebSocket handlers
 io.on('connection', function(socket) {
 	console.log("Someone Connected");
-	ConnectPlayer(socket);
+	ConnectSocket(socket);
 
 	socket.on('polo', function(data)
 	{
@@ -37,23 +38,7 @@ io.on('connection', function(socket) {
 
 	socket.on('name is', function(name)
 	{
-		if(CheckBannedNames(name) == false)
-		{
-			GetPlayerBySocket(socket).name = name;
-			console.log("PLAYER " + GetPlayerBySocket(socket).id + "'s NAME IS : " + name + ".");
-			connectedPlayers ++;
-			SendToPlayers('player count', connectedPlayers);
-			if(connectedPlayers == 4)
-			{
-				waitingForPlayers = false;
-				StartGame();
-			}
-		}
-		else
-		{
-			//	BANNED NAME
-			RefuseConnection(socket, "Banned Name");
-		}
+		ConfirmWizard(socket, name);
 	});
 
 });
@@ -103,58 +88,75 @@ function StartServer()
 {
 	console.log('Starting server on port ' + port);
 	LoadSpells();
-	waitingForPlayers = true;
-	connectedPlayers = 0;
-	connectedPlayers = new Array();
+	queuedPlayers = new Array();
 	player1 = undefined;
 	player2 = undefined;
 	player3 = undefined;
 	player4 = undefined;
 }
 
-function ConnectPlayer(socket)
+function ConnectSocket(socket)
 {
-	if(connectedPlayers >= 4)
+	socket.emit('confirm name');
+}
+function ConfirmWizard(socket, name)
+{
+	if(CheckBannedNames(name) == false)
 	{
-		//	REFUSE
-		console.log("Refused New Player");
-		RefuseConnection(socket, "Server Full");
+		queuedPlayers.push(new Player(socket, 0, name));
+		TryStartGame();
 	}
 	else
 	{
-		//	ACCEPT
-		var connectedAsPlayer = 0;
-		if(player1 === undefined)
-		{
-			connectedAsPlayer = 1;
-			player1 = new Player(socket, connectedAsPlayer);
-		}
-		else if(player2 === undefined)
-		{
-			connectedAsPlayer = 2;
-			player2 = new Player(socket, connectedAsPlayer);
-		}
-		else if(player3 === undefined)
-		{
-			connectedAsPlayer = 3;
-			player3 = new Player(socket, connectedAsPlayer);
-		}
-		else if(player4 === undefined)
-		{
-			connectedAsPlayer = 4;
-			player4 = new Player(socket, connectedAsPlayer);
-		}
+		//	BANNED NAME
+		RefuseConnection(socket, "Banned Name");
+	}
+}
 
-		if(connectedAsPlayer != 0)
-		{
-			//	SUCCESS!
-			socket.emit('confirm name', connectedAsPlayer);
-		}
-		else
-		{
-			//	SOMETHING IS NOT RIGHT
-			RefuseConnection(socket, "Server Error");
-		}
+function TryStartGame()
+{
+	if(gameInProgress == true)
+	{
+		SendToQueue('queue length', queuedPlayers.length);
+	}
+	else if (queuedPlayers.length >= 4)
+	{
+		StartGame();
+	}
+	else if(queuedPlayers.length <= 3)
+	{
+		SendToQueue('player count', queuedPlayers.length);
+	}
+}
+
+function CreatePlayer(player)
+{
+	var connectedAsPlayer = 0;
+	if(player1 === undefined)
+	{
+		connectedAsPlayer = 1;
+		player1 = new Player(player.socket, connectedAsPlayer, player.name);
+	}
+	else if(player2 === undefined)
+	{
+		connectedAsPlayer = 2;
+		player2 = new Player(player.socket, connectedAsPlayer, player.name);
+	}
+	else if(player3 === undefined)
+	{
+		connectedAsPlayer = 3;
+		player3 = new Player(player.socket, connectedAsPlayer, player.name);
+	}
+	else if(player4 === undefined)
+	{
+		connectedAsPlayer = 4;
+		player4 = new Player(player.socket, connectedAsPlayer, player.name);
+	}
+
+	if(connectedAsPlayer != 0)
+	{
+		//	SUCCESS!
+		console.log(player.name + " has joined the battle!");
 	}
 }
 function RefuseConnection(socket, reason)
@@ -201,12 +203,22 @@ function GetPlayerById(id)
 		return player4;
 	}
 }
+function SendToQueue(command, message)
+{
+	if(queuedPlayers.length >= 1)
+	{
+		for(var i = 0; i < queuedPlayers.length; i++)
+		{
+			queuedPlayers[i].Send(command, message);
+		}
+	}
+}
 function SendToPlayers(command, message)
 {
 	var players = ConnectedPlayers();
 	for(var i = 0; i < players.length; i++)
 	{
-		GetPlayerById(i + 1).socket.emit(command, message);
+		GetPlayerById(i + 1).Send(command, message);
 	}
 }
 
@@ -223,9 +235,9 @@ function CheckBannedNames(name)
 //	GAME STUFF
 class Player
 {
-	constructor(socket, id)
+	constructor(socket, id, name)
 	{
-		this.name = "";
+		this.name = name;
 		this.health = 100;
 		this.mana = 100;
 		this.socket = socket;
@@ -235,6 +247,11 @@ class Player
 		this.dead = false;
 		this.defence = 0;
 		this.evadedNothing = true;
+	}
+
+	Send(command, message)
+	{
+		this.socket.emit(command, message);
 	}
 
 	Polo()
@@ -278,11 +295,11 @@ class Player
 	}
 }
 
-var waitingForPlayers = true;
+var gameInProgress = false;
 var connectedPlayers = 0;
 var player1; //	TEAM A
-var player2; // TEAM B
-var player3; // TEAM A
+var player2; // TEAM A
+var player3; // TEAM B
 var player4; // TEAM B
 var playerTurn = 0;
 
@@ -296,9 +313,12 @@ function ConnectedPlayers()
 	return result;
 }
 
-
 function StartGame()
 {
+	gameInProgress = true;
+	for(var i = 0; i < 4; i++){CreatePlayer(queuedPlayers.shift());}
+	SendToQueue('player count', queuedPlayers.length);
+
 	console.log("GAME STARTED!");
 	SendToPlayers('start game');
 
@@ -436,6 +456,15 @@ function ProccessRound()
 			caster.DrainMana(spell.cost);
 		}
 	}
+}
+
+function EndGame()
+{
+	connectedPlayers = new Array();
+	player1 = undefined;
+	player2 = undefined;
+	player3 = undefined;
+	player4 = undefined;
 }
 
 function LoadSpells()
