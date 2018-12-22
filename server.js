@@ -243,7 +243,6 @@ class Player
 		this.socket = socket;
 		this.id = id;
 		this.timeout = 5;
-
 		this.dead = false;
 		this.defence = 0;
 		this.evadedNothing = true;
@@ -292,6 +291,7 @@ class Player
 		this.health = 0;
 		this.dead = true;
 		console.log(this.name + " HAS RETIRED FROM WIZARDING");
+		HandlePlayerDeath();
 	}
 }
 
@@ -458,8 +458,24 @@ function ProccessRound()
 	}
 }
 
-function EndGame()
+function HandlePlayerDeath(player)
 {
+	if(GetPlayerById(1).dead && GetPlayerById(2).dead)
+	{
+		//	TEAM 2 WINS
+		EndGame(2);
+	}
+	else if(GetPlayerById(3).dead && GetPlayerById(4).dead)
+	{
+		//	TEAM 1 WINS
+		EndGame(1);
+	}
+}
+
+function EndGame(winningTeam)
+{
+	SendToPlayers('game over', winningTeam);
+
 	connectedPlayers = new Array();
 	player1 = undefined;
 	player2 = undefined;
