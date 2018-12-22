@@ -17,6 +17,7 @@ var context;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 const FPS_LIMIT = 30;
+var debugGraphics = false;
 
 
 //  LOADED SPELLS
@@ -802,7 +803,12 @@ class ButtonObject extends Object
         if(this.clear)
         {
             context.clearRect(this.pos.x - 4, this.pos.y - 4, this.width + 8, this.height + 8);
-            info += "</br>" + this.name;
+            if(debugGraphics == true)
+            {
+                context.fillStyle = "green";
+                context.fillRect(this.pos.x - 4, this.pos.y - 4, this.width + 8, this.height + 8);
+                info += "</br>" + this.name;
+            }
             this.clear = false;
         }
         if(this.draw == true)
@@ -1046,8 +1052,11 @@ class Renderer
         }
 
 
-        document.getElementById("info").innerHTML = info;
-        info = "Clearing :";
+        if(debugGraphics == true)
+        {
+            document.getElementById("info").innerHTML = info;
+            info = "Clearing :";
+        }
     }
 }
 

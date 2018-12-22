@@ -41,6 +41,7 @@ io.on('connection', function(socket) {
 		{
 			GetPlayerBySocket(socket).name = name;
 			console.log("PLAYER " + GetPlayerBySocket(socket).id + "'s NAME IS : " + name + ".");
+			connectedPlayers ++;
 			SendToPlayers('player count', connectedPlayers);
 			if(connectedPlayers == 4)
 			{
@@ -104,6 +105,7 @@ function StartServer()
 	LoadSpells();
 	waitingForPlayers = true;
 	connectedPlayers = 0;
+	connectedPlayers = new Array();
 	player1 = undefined;
 	player2 = undefined;
 	player3 = undefined;
@@ -146,7 +148,6 @@ function ConnectPlayer(socket)
 		if(connectedAsPlayer != 0)
 		{
 			//	SUCCESS!
-			connectedPlayers ++;
 			socket.emit('confirm name', connectedAsPlayer);
 		}
 		else
