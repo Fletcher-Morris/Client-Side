@@ -34,6 +34,7 @@ io.on('connection', function(socket) {
 	{
 		GetPlayerBySocket(socket).name = name;
 		console.log("PLAYER " + GetPlayerBySocket(socket).id + "'s NAME IS : " + name + ".");
+		SendToPlayers('player count', connectedPlayers);
 		if(connectedPlayers == 4)
 		{
 			waitingForPlayers = false;

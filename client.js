@@ -126,6 +126,11 @@ function SetUpNetworking()
     {
         EnterGameState("CHOOSING_ACTION");
     });
+    socket.on('player count', function(count)
+    {
+        connectedPlayers = count;
+        EnterGameState("WAITING_FOR_PLAYERS", true);
+    });
     socket.on('player names', function(nameString)
     {
         var names = nameString.split("_");
@@ -449,9 +454,9 @@ function Update()
     FixInput();
 }
 
-function EnterGameState(state)
+function EnterGameState(state, force)
 {
-    if(state == gameState)
+    if(state == gameState && force !== true)
     {
         console.log("GAMESTATE IS ALREADY '" + state + "'");
         return;
