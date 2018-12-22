@@ -4,14 +4,19 @@ var http = require('http');
 var path = require('path');
 var socketIO = require('socket.io');
 
-var spellData = require('./server-spells.json');
-var loadedSpells = JSON.parse(JSON.stringify(spellData));
+var spellsJson = require('./server-spells.json');
+var loadedSpells = JSON.parse(JSON.stringify(spellsJson));
+
+var settingsJson = require('./settings.json');
+var serverSettings = JSON.parse(JSON.stringify(settingsJson));
+var bannedNames;
+var timeoutTime = 4;
+var port = 5000;
+LoadSettings();
 
 var app = express();
 var server = http.Server(app);
 var io = socketIO(server);
-
-var port = 5000;
 
 app.set('port', port);
 app.use('', express.static(__dirname));
@@ -32,13 +37,21 @@ io.on('connection', function(socket) {
 
 	socket.on('name is', function(name)
 	{
-		GetPlayerBySocket(socket).name = name;
-		console.log("PLAYER " + GetPlayerBySocket(socket).id + "'s NAME IS : " + name + ".");
-		SendToPlayers('player count', connectedPlayers);
-		if(connectedPlayers == 4)
+		if(CheckBannedNames(name) == false)
 		{
-			waitingForPlayers = false;
-			StartGame();
+			GetPlayerBySocket(socket).name = name;
+			console.log("PLAYER " + GetPlayerBySocket(socket).id + "'s NAME IS : " + name + ".");
+			SendToPlayers('player count', connectedPlayers);
+			if(connectedPlayers == 4)
+			{
+				waitingForPlayers = false;
+				StartGame();
+			}
+		}
+		else
+		{
+			//	BANNED NAME
+			RefuseConnection(socket, "Banned Name");
 		}
 	});
 
@@ -69,8 +82,21 @@ setInterval(function()
 			console.log("PLAYER " + players[i].id + " HAS TIMED OUT!");
 		}
 	}
-}, 4000);
+}, (timeoutTime + 1) * 1000);
 
+function LoadSettings()
+{
+	port = serverSettings.port;
+	bannedNames = new Array();
+	var bannedNamesString = "Banned Names : "
+	timeoutTime = serverSettings.timeout;
+	for (var i = 0; i < serverSettings.bannedNames.length; i++)
+	{
+		bannedNames.push(serverSettings.bannedNames[i]);
+		bannedNamesString += serverSettings.bannedNames[i] + ", ";
+	}
+	console.log(bannedNamesString + "\n");
+}
 
 function StartServer()
 {
@@ -90,7 +116,7 @@ function ConnectPlayer(socket)
 	{
 		//	REFUSE
 		console.log("Refused New Player");
-		socket.emit('refuse connection', "Server Is Full");
+		RefuseConnection(socket, "Server Full");
 	}
 	else
 	{
@@ -121,16 +147,19 @@ function ConnectPlayer(socket)
 		{
 			//	SUCCESS!
 			connectedPlayers ++;
-			console.log("Connected As Player " + connectedAsPlayer);
 			socket.emit('confirm name', connectedAsPlayer);
 		}
 		else
 		{
 			//	SOMETHING IS NOT RIGHT
-			console.log("Something went wrong connecting the player!");
-			socket.emit('refuse connection', "Server Error");
+			RefuseConnection(socket, "Server Error");
 		}
 	}
+}
+function RefuseConnection(socket, reason)
+{
+	socket.emit('refuse connection', reason);
+	console.log("Refused connection to player, reason : " + reason + ".");
 }
 
 function GetPlayerBySocket(socket)
@@ -180,7 +209,14 @@ function SendToPlayers(command, message)
 	}
 }
 
-
+function CheckBannedNames(name)
+{
+	for(var i = 0; i < bannedNames.length; i++)
+	{
+		if(bannedNames[i] == name) return true;
+	}
+	return false;
+}
 
 
 //	GAME STUFF
@@ -403,11 +439,12 @@ function ProccessRound()
 
 function LoadSpells()
 {
-	console.log("\nLoaded Spells :");
+	var loadedSpellsString = "\nLoaded Spells : ";
 	for (var i = 0; i < loadedSpells.length; i++)
 	{		
-        console.log(loadedSpells[i]);
+        loadedSpellsString += (loadedSpells[i].name + ", ");
     }
+    console.log(loadedSpellsString + "\n");
 }
 
 class Spell
