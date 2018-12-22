@@ -81,6 +81,7 @@ var buttonPressedThisFrame = true;
 var gameState = "START";
 var hoveredButton = attack_btn;
 var playerName = "";
+var dotTimer = 0;
 
 
 window.addEventListener("load", function()
@@ -327,6 +328,33 @@ function Update()
         if(playerName.length >= 1) submit_name_btn.Enable(true);
         else submit_name_btn.Enable(false);
         submit_name_btn.Hover(true);        
+    }
+    else if(gameState == "WAITING_FOR_PLAYERS")
+    {
+        dotTimer += 2.0/FPS_LIMIT;
+        var txt;
+        if(dotTimer <= 1.0)
+        {
+            txt = "- WAITING FOR PLAYERS (" + connectedPlayers + "/4) |";
+        }
+        else if(dotTimer <= 2.0)
+        {
+            txt = "\\ WAITING FOR PLAYERS (" + connectedPlayers + "/4) /";
+        }
+        else if(dotTimer <= 3.0)
+        {
+            txt = "| WAITING FOR PLAYERS (" + connectedPlayers + "/4) -";
+        }
+        else if(dotTimer <= 4.0)
+        {
+            txt = "/ WAITING FOR PLAYERS (" + connectedPlayers + "/4) \\";
+        }
+        else
+        {
+            dotTimer = 0.0;
+            txt = "- WAITING FOR PLAYERS (" + connectedPlayers + "/4) |";
+        }
+        server_text_message.SetText(txt);
     }
     else if(gameState == "CHOOSING_ACTION")
     {
