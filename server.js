@@ -28,7 +28,6 @@ var queuedPlayers;
 
 // Add the WebSocket handlers
 io.on('connection', function(socket) {
-	console.log("Someone Connected");
 	ConnectSocket(socket);
 
 	socket.on('polo', function(data)
@@ -39,6 +38,11 @@ io.on('connection', function(socket) {
 	socket.on('name is', function(name)
 	{
 		ConfirmWizard(socket, name);
+	});
+
+	socket.on('action', function(action)
+	{
+		GetPlayerBySocket(socket).SetAction(action);
 	});
 
 });
@@ -104,6 +108,7 @@ function ConfirmWizard(socket, name)
 	if(CheckBannedNames(name) == false)
 	{
 		queuedPlayers.push(new Player(socket, 0, name));
+		console.log(name + " joined the queue");
 		TryStartGame();
 	}
 	else
@@ -261,6 +266,9 @@ class Player
 	SetAction(act)
 	{
 		this.action = act;
+		this.action.spell = GetSpell(act.spell);
+		console.log(this.name + " has chosen the '" + act.spell.name + "' spell");
+		ProccessRound();
 	}
 
 	Heal(amount)
@@ -334,7 +342,13 @@ function StartGame()
 
 function ProccessRound()
 {
-	var executionOrder;
+	//	CKECK ALL PLAYERS HAVE AN ACTION
+	for(var i = 0; i < ConnectedPlayers().length; i++)
+	{
+		if(GetPlayerById(i + 1).action == undefined) return;
+	}
+
+	var executionOrder = new Array();
 	var caster;
 	var target;
 	var spell;
@@ -379,10 +393,10 @@ function ProccessRound()
 	}
 	for(var i = 0; i < executionOrder.length; i++)
 	{
+		caster = executionOrder[i];
+		target = GetPlayerById(caster.action.target);
 		if(caster.dead == false && target.dead == false)
 		{
-			caster = executionOrder[i];
-			target = GetPlayerById(caster.action.target);
 			spell = caster.action.spell;
 			if(spell.type == "special")
 			{
@@ -402,7 +416,7 @@ function ProccessRound()
 				target.Defend(spell.effect);
 				if(caster == target)
 				{
-					console.log(caster.name + " increased their defence by" + spell.effect + " points!");
+					console.log(caster.name + " increased their defence by " + spell.effect + " points!");
 				}
 				else
 				{

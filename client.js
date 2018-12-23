@@ -180,24 +180,27 @@ function CreateObjects()
     special_btn = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
     special_btn.SetFunction("CHOOSING_SPECIAL");
     evade_btn = new ButtonObject(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
-    evade_btn.SetFunction("CHOOSING_EVADE");
+    evade_btn.SetFunction("ACTION_evade");
     hoveredButton = attack_btn;
 
     for (var i = 0; i < attackSpells.length; i++)
     {
         var spellButton = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, attackSpells[i].name.toUpperCase(), 20);
+        spellButton.SetFunction("ACTION_" + attackSpells[i].name);
         attack_choice_btns.push(spellButton);
         spellButton.Enable(false);
     }
     for (var i = 0; i < defendSpells.length; i++)
     {
         var spellButton = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, defendSpells[i].name.toUpperCase(), 20);
+        spellButton.SetFunction("ACTION_" + defendSpells[i].name);
         defend_choice_btns.push(spellButton);
         spellButton.Enable(false);
     }
     for (var i = 0; i < specialSpells.length; i++)
     {
         var spellButton = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, specialSpells[i].name.toUpperCase(), 20);
+        spellButton.SetFunction("ACTION_" + specialSpells[i].name);
         special_choice_btns.push(spellButton);
         spellButton.Enable(false);
     }
@@ -586,6 +589,7 @@ function EnterGameState(state, force)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(true);
         EnableSpecialOptionObjects(false);
+
         defend_choice_btns[0].Hover(true);
     }
     else if(state == "CHOOSING_SPECIAL")
@@ -594,6 +598,12 @@ function EnterGameState(state, force)
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(true);
         special_choice_btns[0].Hover(true);
+    }
+    else if(state == "CHOOSING_TARGET")
+    {
+        EnableAttackOptionObjects(false);
+        EnableDefendOptionObjects(false);
+        EnableSpecialOptionObjects(false);
     }
     else
     {
@@ -912,6 +922,12 @@ function CallButtonFunction(functionString)
     {
 
     }
+    else if(functionString.includes("ACTION_"))
+    {
+        var act = functionString.split('_')[1];
+        console.log(act);
+        SubmitSpell(act);
+    }
 }
 
 class TextObject extends Object
@@ -1012,6 +1028,40 @@ class Spell
         this.type = type;
         this.cost = cost;
         this.effect = effect;
+    }
+}
+
+class Action
+{
+    constructor(target, spell)
+    {
+        this.target = target;
+        this.spell = spell;
+    }
+}
+
+function SubmitSpell(spell)
+{
+    socket.emit('action', new Action(1, GetSpell(spell).name));
+}
+
+function GetSpell(spellName)
+{
+    for(var i = 0; i < attackSpells.length; i++)
+    {
+        if(attackSpells[i].name == spellName) return attackSpells[i];
+    }
+    for(var i = 0; i < defendSpells.length; i++)
+    {
+        if(defendSpells[i].name == spellName) return defendSpells[i];
+    }
+    for(var i = 0; i < specialSpells.length; i++)
+    {
+        if(specialSpells[i].name == spellName) return specialSpells[i];
+    }
+    for(var i = 0; i < evadeSpells.length; i++)
+    {
+        if(evadeSpells[i].name == spellName) return evadeSpells[i];
     }
 }
 
