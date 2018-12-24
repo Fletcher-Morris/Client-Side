@@ -5,6 +5,6 @@
   "playerHealth": "10",
   "playerMana": "10",
   "resetDefence": "true",
-  "resetBoost": "false",
-  "limitReflectedDamage": "false"
+  "resetBoost": "true",
+  "limitReflectedDamage": "true"
 }
