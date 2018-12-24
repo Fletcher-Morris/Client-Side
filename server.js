@@ -243,8 +243,8 @@ class Player
 	constructor(socket, id, name)
 	{
 		this.name = name;
-		this.health = 100;
-		this.mana = 100;
+		this.health = 10;
+		this.mana = 10;
 		this.socket = socket;
 		this.id = id;
 		this.timeout = 5;
@@ -309,7 +309,7 @@ var player1; //	TEAM A
 var player2; // TEAM A
 var player3; // TEAM B
 var player4; // TEAM B
-var playerTurn = 0;
+var gameRound = 1;
 
 function ConnectedPlayers()
 {
@@ -324,6 +324,8 @@ function ConnectedPlayers()
 function StartGame()
 {
 	gameInProgress = true;
+	gameRound = 1;
+	
 	for(var i = 0; i < 4; i++){CreatePlayer(queuedPlayers.shift());}
 	SendToQueue('player count', queuedPlayers.length);
 
@@ -420,7 +422,7 @@ function ProccessRound()
 				}
 				else
 				{
-					console.log(caster.name + " increased " + target.name + "'s defence by" + spell.effect + " points!");
+					console.log(caster.name + " increased " + target.name + "'s defence by " + spell.effect + " points!");
 				}
 			}
 			else if(spell.type == "attack")
@@ -470,6 +472,15 @@ function ProccessRound()
 			caster.DrainMana(spell.cost);
 		}
 	}
+
+	//	SHOW REOUND STATS
+	console.log("\nROUND " + gameRound + " STATS:");
+	for(var i = 1; i < ConnectedPlayers().length + 1; i++)
+	{
+		var p = GetPlayerById(i)
+		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + "}");
+	}
+	gameRound ++;
 }
 
 function HandlePlayerDeath(player)
