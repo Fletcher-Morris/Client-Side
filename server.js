@@ -243,8 +243,8 @@ class Player
 	constructor(socket, id, name)
 	{
 		this.name = name;
-		this.health = 10;
-		this.mana = 10;
+		this.health = serverSettings.playerHealth;
+		this.mana = serverSettings.playerMana;
 		this.socket = socket;
 		this.id = id;
 		this.timeout = 5;
@@ -275,13 +275,14 @@ class Player
 	Heal(amount)
 	{
 		this.health += amount;
-		if(this.health >= 100) this.health = 100;
+		if(this.health >= serverSettings.playerHealth) this.health = serverSettings.playerHealth;
 	}
 
 	DrainMana(amount)
 	{
 		this.mana -= amount;
 		if(this.mana <= 0) this.mana = 0;
+		if(this.mana >= serverSettings.playerMana) this.mana = serverSettings.playerMana;
 	}
 
 	Damage(amount)
@@ -484,7 +485,7 @@ function ProccessRound()
 					{
 						//	Reflect
 						var reflectValue = target.defence - (spell.effect * caster.multiplier);
-						if(reflectValue >= (spell.effect * caster.multiplier)) reflectValue = (spell.effect * caster.multiplier);
+						if(serverSettings.limitReflectedDamage == true && reflectValue >= (spell.effect * caster.multiplier)) reflectValue = (spell.effect * caster.multiplier);
 						target.defence -= (spell.effect * caster.multiplier);
 						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + reflectValue + " back towards them!");
 						caster.Damage(reflectValue);
@@ -516,8 +517,8 @@ function ProccessRound()
 	for(var i = 1; i < ConnectedPlayers().length + 1; i++)
 	{
 		var p = GetPlayerById(i);
-		if(serverSettings.resetDefence) p.defence = 0;
-		if(serverSettings.resetBoost) p.multiplier = 1.0;
+		if(serverSettings.resetDefence == true) p.defence = 0;
+		if(serverSettings.resetBoost == true) p.multiplier = 1.0;
 		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + ", Defence: " + p.defence + " }");
 	}
 	gameRound ++;

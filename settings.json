@@ -2,6 +2,9 @@
   "port": "5000",
   "timeout": "4",
   "bannedNames": ["illegal", "not allowed", "banned"],
+  "playerHealth": "10",
+  "playerMana": "10",
   "resetDefence": "true",
-  "resetBoost": "true"
+  "resetBoost": "false",
+  "limitReflectedDamage": "false"
 }

@@ -27,7 +27,7 @@ var evadeSpells = [];
 
 //  IMAGES
 var wizard_1_img = new Image();
-wizard_1_img.src = 'images/wizard_1_img.png';
+wizard_1_img.src = 'images/wizz.png';
 var wizard_2_img = new Image();
 wizard_2_img.src = 'images/wizard_2_img.png';
 var wizard_3_img = new Image();
@@ -170,9 +170,9 @@ function CreateObjects()
     submit_name_btn.name = "submit_name_btn";
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
-    player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_2_img);
-    player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_3_img);
-    player_4_sprite = new ImageObject("player_4", new Vector2(650,250), wizard_4_img);
+    player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_1_img);
+    player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_1_img);
+    player_4_sprite = new ImageObject("player_4", new Vector2(650,250), wizard_1_img);
     attack_btn = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
     attack_btn.SetFunction("CHOOSING_ATTACK");
     defend_btn = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
@@ -571,6 +571,7 @@ function EnterGameState(state, force)
     else if(state == "CHOOSING_ACTION")
     {
         DisableActiveObjects();
+        EnablePlayerSprites(true);
         attack_btn.Enable(true);
         defend_btn.Enable(true);
         special_btn.Enable(true);
@@ -582,6 +583,7 @@ function EnterGameState(state, force)
         EnableAttackOptionObjects(true);
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(false);
+        EnablePlayerSprites(true);
         attack_choice_btns[0].Hover(true);
     }
     else if(state == "CHOOSING_DEFEND")
@@ -589,7 +591,7 @@ function EnterGameState(state, force)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(true);
         EnableSpecialOptionObjects(false);
-
+        EnablePlayerSprites(true);
         defend_choice_btns[0].Hover(true);
     }
     else if(state == "CHOOSING_SPECIAL")
@@ -597,6 +599,7 @@ function EnterGameState(state, force)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(true);
+        EnablePlayerSprites(true);
         special_choice_btns[0].Hover(true);
     }
     else if(state == "CHOOSING_TARGET")
@@ -604,6 +607,7 @@ function EnterGameState(state, force)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(false);
+        EnablePlayerSprites(true);
     }
     else
     {
@@ -662,6 +666,13 @@ function EnableSpecialOptionObjects(enable)
     {
         special_choice_btns[i].Enable(enable);
     }
+}
+function EnablePlayerSprites(enable)
+{
+    player_1_sprite.Enable(enable);
+    player_2_sprite.Enable(enable);
+    player_3_sprite.Enable(enable);
+    player_4_sprite.Enable(enable);
 }
 
 //  RENDER THE SCENE
