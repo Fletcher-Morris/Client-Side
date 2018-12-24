@@ -48,7 +48,7 @@ io.on('connection', function(socket) {
 });
 
 io.on('disconnect', function(socket) {
-	console.log("Someone disconnected @ " + socket);
+	console.log("\nSomeone disconnected @ " + socket);
 });
 
 
@@ -69,7 +69,7 @@ setInterval(function()
 	{
 		if(players[i].timeout < 0)
 		{
-			console.log("PLAYER " + players[i].id + " HAS TIMED OUT!");
+			console.log("\nPLAYER " + players[i].id + " HAS TIMED OUT!");
 		}
 	}
 }, (timeoutTime + 1) * 1000);
@@ -108,7 +108,7 @@ function ConfirmWizard(socket, name)
 	if(CheckBannedNames(name) == false)
 	{
 		queuedPlayers.push(new Player(socket, 0, name));
-		console.log(name + " joined the queue");
+		console.log("\n" + name + " joined the queue");
 		TryStartGame();
 	}
 	else
@@ -161,13 +161,12 @@ function CreatePlayer(player)
 	if(connectedAsPlayer != 0)
 	{
 		//	SUCCESS!
-		console.log(player.name + " has joined the battle!");
 	}
 }
 function RefuseConnection(socket, reason)
 {
 	socket.emit('refuse connection', reason);
-	console.log("Refused connection to player, reason : " + reason + ".");
+	console.log("\nRefused connection to player, reason : " + reason + ".");
 }
 
 function GetPlayerBySocket(socket)
@@ -267,7 +266,7 @@ class Player
 	SetAction(act)
 	{
 		this.action = act;
-		this.action.spell = GetSpell(act.spell);
+		this.action.spell = GetSpell(act.spell);		
 		console.log(this.name + " has chosen the '" + act.spell.name + "' spell");
 		ProccessRound();
 	}
@@ -341,11 +340,18 @@ function StartGame()
 	for(var i = 0; i < 4; i++){CreatePlayer(queuedPlayers.shift());}
 	SendToQueue('player count', queuedPlayers.length);
 
-	console.log("GAME STARTED!");
+	var nameString = "";
+	for(var i = 0; i < 4; i++)
+	{
+		nameString += GetPlayerById(i + 1).name;
+		if(i < 3) nameString += ", ";
+	}
+
+	console.log("\nGAME STARTED! { " + nameString + " }");
 	SendToPlayers('start game');
 
 	//	SEND THE PLAYERS' NAMES TO EACH PLAYER
-	var nameString = "";
+	nameString = "";
 	for(var i = 0; i < 4; i++)
 	{
 		nameString += GetPlayerById(i + 1).name;
