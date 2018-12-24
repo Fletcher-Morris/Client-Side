@@ -124,13 +124,13 @@ function TryStartGame()
 	{
 		SendToQueue('queue length', queuedPlayers.length);
 	}
-	else if (queuedPlayers.length >= 4)
-	{
-		StartGame();
-	}
 	else if(queuedPlayers.length <= 3)
 	{
 		SendToQueue('player count', queuedPlayers.length);
+	}
+	if (queuedPlayers.length >= 4 && gameInProgress == false)
+	{
+		StartGame();
 	}
 }
 

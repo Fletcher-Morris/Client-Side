@@ -169,6 +169,10 @@ function CreateObjects()
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
 
+    player_1_btn = new ButtonObject(new Vector2(50,50), 100, 200, "1", 25);
+    player_2_btn = new ButtonObject(new Vector2(50,250), 100, 200, "1", 25);
+    player_3_btn = new ButtonObject(new Vector2(650,50), 100, 200, "1", 25);
+    player_4_btn = new ButtonObject(new Vector2(650,250), 100, 200, "1", 25);
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_1_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_1_img);
@@ -571,6 +575,7 @@ function EnterGameState(state, force)
     else if(state == "CHOOSING_ACTION")
     {
         DisableActiveObjects();
+        ClearAll();
         EnablePlayerSprites(true);
         attack_btn.Enable(true);
         defend_btn.Enable(true);
@@ -669,6 +674,10 @@ function EnableSpecialOptionObjects(enable)
 }
 function EnablePlayerSprites(enable)
 {
+    player_1_btn.Enable(true);
+    player_2_btn.Enable(true);
+    player_3_btn.Enable(true);
+    player_4_btn.Enable(true);
     player_1_sprite.Enable(enable);
     player_2_sprite.Enable(enable);
     player_3_sprite.Enable(enable);
