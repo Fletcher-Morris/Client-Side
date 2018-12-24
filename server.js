@@ -251,6 +251,7 @@ class Player
 		this.dead = false;
 		this.defence = 0;
 		this.evadedNothing = true;
+		this.multiplier = 1.0;
 	}
 
 	Send(command, message)
@@ -286,12 +287,16 @@ class Player
 	Damage(amount)
 	{
 		this.health -= amount;
-		if(this.health <= 0) this.Death();
 	}
 
 	Defend(amount)
 	{
 		this.defence += amount;
+	}
+
+	Boost(amount)
+	{
+		this.multiplier += amount;
 	}
 
 	Death()
@@ -300,6 +305,11 @@ class Player
 		this.dead = true;
 		console.log(this.name + " HAS RETIRED FROM WIZARDING");
 		HandlePlayerDeath();
+	}
+
+	DeathCheck()
+	{
+		if(this.health <= 0) this.Death();
 	}
 }
 
@@ -310,6 +320,7 @@ var player2; // TEAM A
 var player3; // TEAM B
 var player4; // TEAM B
 var gameRound = 1;
+var winningTeam = 0;
 
 function ConnectedPlayers()
 {
@@ -325,7 +336,7 @@ function StartGame()
 {
 	gameInProgress = true;
 	gameRound = 1;
-	
+
 	for(var i = 0; i < 4; i++){CreatePlayer(queuedPlayers.shift());}
 	SendToQueue('player count', queuedPlayers.length);
 
@@ -355,12 +366,22 @@ function ProccessRound()
 	var target;
 	var spell;
 
-	//	Check for special spells
+	//	Check for boost spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
 		caster = GetPlayerById(i + 1);
 		spell = caster.action.spell;
-		if(spell.type == "special")
+		if(spell.name == "boost")
+		{
+			executionOrder.push(caster);
+		}
+	}
+	//	Check for heal spells
+	for(var i = 0; i < ConnectedPlayers().length; i++)
+	{
+		caster = GetPlayerById(i + 1);
+		spell = caster.action.spell;
+		if(spell.name == "heal")
 		{
 			executionOrder.push(caster);
 		}
@@ -393,11 +414,15 @@ function ProccessRound()
 			executionOrder.push(caster);
 		}
 	}
+
+	console.log("\nROUND " + gameRound + " STATS:");
+
 	for(var i = 0; i < executionOrder.length; i++)
 	{
 		caster = executionOrder[i];
 		target = GetPlayerById(caster.action.target);
-		if(caster.dead == false && target.dead == false)
+		var multiplier = 1.0;
+		if(caster.dead == false && target.dead == false && winningTeam == 0)
 		{
 			spell = caster.action.spell;
 			if(spell.type == "special")
@@ -405,24 +430,33 @@ function ProccessRound()
 				if(spell.name == "boost")
 				{
 					//	Boost the target
-					target.boosted = true;
+					target.Boost(1.0);
+					console.log(caster.name + " boosted " + target.name + "'s' spell!");
 				}
 				if(spell.name == "heal")
 				{
 					//	Heal the target
-					target.Heal(caster.action.spell.effect);
+					target.Heal(caster.action.spell.effect * caster.multiplier);
+					if(caster == target)
+					{
+						console.log(caster.name + " healed themselves by " + (caster.action.spell.effect * caster.multiplier) + " points!");
+					}
+					else
+					{
+						console.log(caster.name + " healed " + target.name + " by " + (caster.action.spell.effect * caster.multiplier) + " points!");
+					}
 				}
 			}
 			if(spell.type == "defend")
 			{
-				target.Defend(spell.effect);
+				target.Defend(spell.effect * caster.multiplier);
 				if(caster == target)
 				{
-					console.log(caster.name + " increased their defence by " + spell.effect + " points!");
+					console.log(caster.name + " increased their defence by " + (spell.effect * caster.multiplier) + " points!");
 				}
 				else
 				{
-					console.log(caster.name + " increased " + target.name + "'s defence by " + spell.effect + " points!");
+					console.log(caster.name + " increased " + target.name + "'s defence by " + (spell.effect * caster.multiplier) + " points!");
 				}
 			}
 			else if(spell.type == "attack")
@@ -432,9 +466,9 @@ function ProccessRound()
 					if(CoinFlip(target.action.effect / 1.0))
 					{
 						//	Evade fails
-						target.Damage(spell.effect);
+						target.Damage(spell.effect * caster.multiplier);
 						console.log(target.name + " tried to evade " + caster.name + "'s spell but failed!");
-						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + spell.effect + " points!");
+						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
 					}
 					else
 					{
@@ -446,19 +480,24 @@ function ProccessRound()
 				else if(target.defence > 0)
 				{
 					//	Target absorbs damage, if defence value exeeds attack value, difference is reflected back
-					if(target.defence > spell.effect)
+					if(target.defence > (spell.effect * caster.multiplier))
 					{
 						//	Reflect
-						var reflectValue = target.defence - spell.effect;
+						var reflectValue = target.defence - (spell.effect * caster.multiplier);
+						if(reflectValue >= (spell.effect * caster.multiplier)) reflectValue = (spell.effect * caster.multiplier);
+						target.defence -= (spell.effect * caster.multiplier);
 						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + reflectValue + " back towards them!");
 						caster.Damage(reflectValue);
 					}
 				}
 				else
 				{
-					target.Damage(spell.effect);
-						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + spell.effect + " points!");
+					target.Damage(spell.effect * caster.multiplier);
+						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
 				}
+
+				target.DeathCheck();
+				if(target != caster) caster.DeathCheck();
 			}
 			if(spell.type == "evade")
 			{
@@ -474,11 +513,12 @@ function ProccessRound()
 	}
 
 	//	SHOW REOUND STATS
-	console.log("\nROUND " + gameRound + " STATS:");
 	for(var i = 1; i < ConnectedPlayers().length + 1; i++)
 	{
-		var p = GetPlayerById(i)
-		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + "}");
+		var p = GetPlayerById(i);
+		if(serverSettings.resetDefence) p.defence = 0;
+		if(serverSettings.resetBoost) p.multiplier = 1.0;
+		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + ", Defence: " + p.defence + " }");
 	}
 	gameRound ++;
 }
@@ -488,18 +528,21 @@ function HandlePlayerDeath(player)
 	if(GetPlayerById(1).dead && GetPlayerById(2).dead)
 	{
 		//	TEAM 2 WINS
-		EndGame(2);
+		winningTeam = 2;
+		EndGame(winningTeam);
 	}
 	else if(GetPlayerById(3).dead && GetPlayerById(4).dead)
 	{
 		//	TEAM 1 WINS
-		EndGame(1);
+		winningTeam = 1;
+		EndGame(winningTeam);
 	}
 }
 
-function EndGame(winningTeam)
+function EndGame(winners)
 {
-	SendToPlayers('game over', winningTeam);
+	SendToPlayers('game over', winners);
+	winningTeam = 0;
 
 	connectedPlayers = new Array();
 	player1 = undefined;

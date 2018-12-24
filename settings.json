@@ -1,5 +1,7 @@
 {
   "port": "5000",
   "timeout": "4",
-  "bannedNames": ["illegal", "not allowed", "banned"]
+  "bannedNames": ["illegal", "not allowed", "banned"],
+  "resetDefence": "true",
+  "resetBoost": "true"
 }
