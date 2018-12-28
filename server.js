@@ -52,7 +52,6 @@ io.on('disconnect', function(socket) {
 });
 
 
-
 setInterval(function()
 {
   SendToPlayers('marco');
@@ -525,7 +524,7 @@ function ProccessRound()
 
 			//	Drain the cost of the spell from the caster's mana pool
 			caster.DrainMana(spell.cost);
-			
+
 			if(target.defence < 0) target.defence = 0;
 			if(caster.defence < 0) caster.defence = 0;
 		}

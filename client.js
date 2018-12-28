@@ -170,6 +170,7 @@ function CreateObjects()
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
 
+    spellDescription = new TextObject("spell_description", new Vector2(400, 200), 400, 300, "SPELL DESCRIPTION", 20, "white"); 
     player_1_btn = new ButtonObject(new Vector2(50,50), 100, 200, "1", 25);
     player_2_btn = new ButtonObject(new Vector2(50,250), 100, 200, "1", 25);
     player_3_btn = new ButtonObject(new Vector2(650,50), 100, 200, "1", 25);
@@ -441,6 +442,8 @@ function Update()
             if(attack_choice_btns[i] == hoveredButton) b = i;
         }
 
+        spellDescription.SetText(GetSpell(attack_choice_btns[b].text).desc);
+
         if(GetKeyDown("arrowup"))
         {
             b++;
@@ -472,6 +475,8 @@ function Update()
             if(defend_choice_btns[i] == hoveredButton) b = i;
         }
 
+        spellDescription.SetText(GetSpell(defend_choice_btns[b].text).desc);
+
         if(GetKeyDown("arrowup"))
         {
             b++;
@@ -500,6 +505,8 @@ function Update()
         {
             if(special_choice_btns[i] == hoveredButton) b = i;
         }
+
+        spellDescription.SetText(GetSpell(special_choice_btns[b].text).desc);
 
         if(GetKeyDown("arrowup"))
         {
@@ -592,6 +599,7 @@ function EnterGameState(state, force)
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         attack_choice_btns[0].Hover(true);
+        spellDescription.Enable(true);
     }
     else if(state == "CHOOSING_DEFEND")
     {
@@ -600,6 +608,7 @@ function EnterGameState(state, force)
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         defend_choice_btns[0].Hover(true);
+        spellDescription.Enable(true);
     }
     else if(state == "CHOOSING_SPECIAL")
     {
@@ -608,6 +617,7 @@ function EnterGameState(state, force)
         EnableSpecialOptionObjects(true);
         EnablePlayerSprites(true);
         special_choice_btns[0].Hover(true);
+        spellDescription.Enable(true);
     }
     else if(state == "CHOOSING_TARGET")
     {
@@ -760,7 +770,6 @@ class ImageObject extends Object
         rendererImages.push(this);
         this.image = image;
         this.draw = true;
-        this.SetScale(100,150);
     }
     SetScale(width, height)
     {
@@ -1023,19 +1032,19 @@ function LoadSpells()
 
         if (newSpell.type == "attack")
         {
-            attackSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+            attackSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
         }
         else if (newSpell.type == "defend")
         {
-            defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+            defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
         }
         else if (newSpell.type == "evade")
         {
-            evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+            evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
         }
         else
         {
-            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect));
+            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
         }
 
         console.log(newSpell);
@@ -1044,12 +1053,13 @@ function LoadSpells()
 
 class Spell
 {
-    constructor(name, type, cost, effect)
+    constructor(name, type, cost, effect, desc)
     {
         this.name = name;
         this.type = type;
         this.cost = cost;
         this.effect = effect;
+        this.desc = desc;
     }
 }
 
@@ -1069,6 +1079,7 @@ function SubmitSpell(spell)
 
 function GetSpell(spellName)
 {
+    spellName = spellName.toString().toLowerCase();
     for(var i = 0; i < attackSpells.length; i++)
     {
         if(attackSpells[i].name == spellName) return attackSpells[i];
