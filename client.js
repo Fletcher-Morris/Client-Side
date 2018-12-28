@@ -1,7 +1,7 @@
 
 
 //  NETWORK STUFF
-var serverAddress = 'http://81.131.146.174';
+var serverAddress = 'http://localhost';
 var serverPort = 5000;
 var socket;
 var networkState = "OFFLINE";

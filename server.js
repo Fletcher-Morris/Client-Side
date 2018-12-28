@@ -487,15 +487,24 @@ function ProccessRound()
 				else if(target.defence > 0)
 				{
 					//	Target absorbs damage, if defence value exeeds attack value, difference is reflected back
-					if(target.defence > (spell.effect * caster.multiplier))
+					var differenceValue = target.defence - (spell.effect * caster.multiplier);
+					if(differenceValue >= 1)
 					{
 						//	Reflect
-						var reflectValue = target.defence - (spell.effect * caster.multiplier);
-						if(serverSettings.limitReflectedDamage == true && reflectValue >= (spell.effect * caster.multiplier)) reflectValue = (spell.effect * caster.multiplier);
-						target.defence -= (spell.effect * caster.multiplier);
-						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + reflectValue + " back towards them!");
-						caster.Damage(reflectValue);
+						if(serverSettings.limitReflectedDamage != false && differenceValue >= (spell.effect * caster.multiplier)) differenceValue = (spell.effect * caster.multiplier);
+						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + differenceValue + " back towards them!");
+						caster.Damage(differenceValue);
 					}
+					else if (differenceValue <= -1)
+					{
+						target.Damage(-differenceValue);
+						console.log(target.name + "'s defence absorbed " + (-differenceValue) + " damage from " + caster.name + "'s '" + spell.name + "' spell!");
+					}
+					else
+					{
+						console.log(target.name + "'s defence protected them from " + caster.name + "'s '" + spell.name + "' spell!");
+					}
+					target.defence -= (spell.effect * caster.multiplier);
 				}
 				else
 				{
@@ -516,6 +525,9 @@ function ProccessRound()
 
 			//	Drain the cost of the spell from the caster's mana pool
 			caster.DrainMana(spell.cost);
+			
+			if(target.defence < 0) target.defence = 0;
+			if(caster.defence < 0) caster.defence = 0;
 		}
 	}
 
@@ -523,11 +535,14 @@ function ProccessRound()
 	for(var i = 1; i < ConnectedPlayers().length + 1; i++)
 	{
 		var p = GetPlayerById(i);
-		if(serverSettings.resetDefence == true) p.defence = 0;
-		if(serverSettings.resetBoost == true) p.multiplier = 1.0;
+		if(serverSettings.resetDefence != false) p.defence = 0;
+		if(serverSettings.resetBoost != false) p.multiplier = 1.0;
+		p.action = undefined;
 		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + ", Defence: " + p.defence + " }");
 	}
 	gameRound ++;
+
+	console.log("\n");
 }
 
 function HandlePlayerDeath(player)
