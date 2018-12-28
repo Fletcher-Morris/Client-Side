@@ -1,7 +1,7 @@
 
 
 //  NETWORK STUFF
-var serverAddress = 'http://localhost';
+var serverAddress = 'http://81.131.146.174';
 var serverPort = 5000;
 var socket;
 var networkState = "OFFLINE";
@@ -60,6 +60,7 @@ var player_1_sprite;
 var player_2_sprite;
 var player_3_sprite;
 var player_4_sprite;
+var spellDescription;
 
 //  RENDERER STUFF
 var renderer;
@@ -185,6 +186,7 @@ function CreateObjects()
     special_btn.SetFunction("CHOOSING_SPECIAL");
     evade_btn = new ButtonObject(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
     evade_btn.SetFunction("ACTION_evade");
+
     hoveredButton = attack_btn;
 
     for (var i = 0; i < attackSpells.length; i++)

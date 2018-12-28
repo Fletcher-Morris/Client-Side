@@ -470,7 +470,7 @@ function ProccessRound()
 			{
 				if(target.action.spell.type == "evade")
 				{
-					if(CoinFlip(target.action.effect / 1.0))
+					if(CoinFlip(1.0 / target.action.spell.effect))
 					{
 						//	Evade fails
 						target.Damage(spell.effect * caster.multiplier);
