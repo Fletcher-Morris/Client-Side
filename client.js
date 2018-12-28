@@ -170,7 +170,8 @@ function CreateObjects()
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
 
-    spellDescription = new TextObject("spell_description", new Vector2(400, 200), 400, 300, "SPELL DESCRIPTION", 20, "white"); 
+    spellDescription = new TextObject("spell_description", new Vector2(400, 200), 500, 200, "SPELL DESCRIPTION", 20, "white");
+    spellDescription.SetSplitter('#');
     player_1_btn = new ButtonObject(new Vector2(50,50), 100, 200, "1", 25);
     player_2_btn = new ButtonObject(new Vector2(50,250), 100, 200, "1", 25);
     player_3_btn = new ButtonObject(new Vector2(650,50), 100, 200, "1", 25);
@@ -995,6 +996,19 @@ class TextObject extends Object
         }
     }
 
+    SetSplitter(splitter)
+    {
+        if(splitter != undefined)
+        {
+            this.lineSplitter = splitter;
+            this.multiline = true;
+        }
+        else
+        {
+            this.multiline = false;
+        }
+    }
+
     Update()
     {
         if(this.enabled)
@@ -1014,7 +1028,21 @@ class TextObject extends Object
         {
             if(this.enabled && this.text != "")
             {
-                renderer.SubmitText(new RendererText(this.text, this.pos.x, this.pos.y, "center", this.colour, this.fontSize));
+                if(this.multiline)
+                {
+                    var textArray = new Array();
+                    textArray = this.text.split(this.lineSplitter);
+                    var lineCount = textArray.length;
+                    for(var l = 0; l < lineCount; l++)
+                    {
+                        var line = textArray[l].toString();
+                        renderer.SubmitText(new RendererText(line, this.pos.x, this.pos.y + ((1.5 * this.fontSize) * (l - lineCount/2.0)), "center", this.colour, this.fontSize));
+                    }
+                }
+                else
+                {
+                    renderer.SubmitText(new RendererText(this.text, this.pos.x, this.pos.y, "center", this.colour, this.fontSize));
+                }
             }
 
             this.draw = false;
