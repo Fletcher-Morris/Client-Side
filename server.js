@@ -66,9 +66,16 @@ setInterval(function()
 	var players = ConnectedPlayers();
 	for(var i = 0; i < players.length; i++)
 	{
-		if(players[i].timeout < 0)
+		if(players[i] != undefined)
 		{
-			console.log("\nPLAYER " + players[i].id + " HAS TIMED OUT!");
+			if(players[i].timeout < 0 && player[i].dead == false)
+			{
+				if(gameInProgress)
+				{
+					console.log("\nPLAYER " + players[i].name + " HAS TIMED OUT!");
+					players[i].Death();
+				}
+			}
 		}
 	}
 }, (timeoutTime + 1) * 1000);

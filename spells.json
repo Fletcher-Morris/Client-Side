@@ -51,7 +51,7 @@ spellJson = [
     {
       "name": "evade",
       "type": "evade",
-      "cost": 0,
+      "cost": -1,
       "effect": 2,
       "desc": "Dodge incomming attacks,#guaranteed to look dumb,#not guaranteed to work."
     }
