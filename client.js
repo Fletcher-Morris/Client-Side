@@ -173,14 +173,13 @@ function CreateObjects()
 
     spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 700, "SPELL DESCRIPTION", 20, "white");
     spellDescription.SetSplitter('#', "top");
-    player_1_btn = new ButtonObject(new Vector2(50,50), 100, 50, "1", 25);
-    player_2_btn = new ButtonObject(new Vector2(50,250), 100, 50, "1", 25);
-    player_3_btn = new ButtonObject(new Vector2(650,50), 100, 50, "1", 25);
-    player_4_btn = new ButtonObject(new Vector2(650,250), 100, 50, "1", 25);
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_1_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_1_img);
     player_4_sprite = new ImageObject("player_4", new Vector2(650,250), wizard_1_img);
+    player_1_info = new TextObject("player_1_info", new Vector2(200,50), 200, 100, "player 1#hp : 10#mn : 10#df : 0", 20, "white");
+    player_1_info.SetSplitter('#', "top");
+    player_1_info.SetAlign("left");
     attack_btn = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
     attack_btn.SetFunction("CHOOSING_ATTACK");
     defend_btn = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
@@ -737,14 +736,11 @@ function EnableSpecialOptionObjects(enable)
 }
 function EnablePlayerSprites(enable)
 {
-    player_1_btn.Enable(true);
-    player_2_btn.Enable(true);
-    player_3_btn.Enable(true);
-    player_4_btn.Enable(true);
     player_1_sprite.Enable(enable);
     player_2_sprite.Enable(enable);
     player_3_sprite.Enable(enable);
     player_4_sprite.Enable(enable);
+    player_1_info.Enable(enable);
 }
 
 //  RENDER THE SCENE
@@ -1021,6 +1017,7 @@ class TextObject extends Object
         this.height = height;
         this.text = text;
         this.fontSize = fontSize;
+        this.SetAlign("center");
         this.colour = colour;
         this.clear = true;
         this.draw = true;
@@ -1060,6 +1057,11 @@ class TextObject extends Object
         }
     }
 
+    SetAlign(align)
+    {
+        this.textAlign = align;
+    }
+
     Update()
     {
         if(this.enabled)
@@ -1090,12 +1092,12 @@ class TextObject extends Object
                         if(this.lineAnchor == "center") anchor = (l - lineCount/2.0);
                         if(this.lineAnchor == "top") anchor = (l);
                         var line = textArray[l].toString();
-                        renderer.SubmitText(new RendererText(line, this.pos.x, this.pos.y + ((1.5 * this.fontSize) * anchor), "center", this.colour, this.fontSize));
+                        renderer.SubmitText(new RendererText(line, this.pos.x, this.pos.y + ((1.5 * this.fontSize) * anchor), this.textAlign, this.colour, this.fontSize));
                     }
                 }
                 else
                 {
-                    renderer.SubmitText(new RendererText(this.text, this.pos.x, this.pos.y, "center", this.colour, this.fontSize));
+                    renderer.SubmitText(new RendererText(this.text, this.pos.x, this.pos.y, this.textAlign, this.colour, this.fontSize));
                 }
             }
 
@@ -1114,23 +1116,19 @@ function LoadSpells()
 
         if (newSpell.type == "attack")
         {
-            attackSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
+            attackSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
         }
         else if (newSpell.type == "defend")
         {
-            defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
+            defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
         }
         else if (newSpell.type == "special")
         {
-            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
+            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
         }
         else if (newSpell.type == "evade")
         {
-            evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
-        }
-        else
-        {
-            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
+            evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
         }
 
         console.log(newSpell);
@@ -1139,13 +1137,14 @@ function LoadSpells()
 
 class Spell
 {
-    constructor(name, type, cost, effect, desc)
+    constructor(name, type, cost, effect, desc, targets)
     {
         this.name = name;
         this.type = type;
         this.cost = cost;
         this.effect = effect;
         this.desc = desc;
+        this.targets = targets;
     }
 }
 
@@ -1277,9 +1276,9 @@ class Renderer
         if(this.batchedTexts.length >= 1)
         {
             context.textBaseline = "middle";
-            context.textAlign = this.batchedTexts[0].align;
             for (var i = 0; i < this.batchedTexts.length; i++)
             {
+                context.textAlign = this.batchedTexts[i].align;
                 context.font = (this.batchedTexts[i].size + "px PressStart2P");
                 context.fillStyle = this.batchedTexts[i].colour;
                 context.fillText(this.batchedTexts[i].text, this.batchedTexts[i].x, this.batchedTexts[i].y);

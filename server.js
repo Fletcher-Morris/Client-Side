@@ -257,6 +257,11 @@ class Player
 		this.defence = 0;
 		this.evadedNothing = true;
 		this.multiplier = 1.0;
+
+		this.socket.on('disconnect', function()
+		{
+			console.log(this.name + " DISCONNECTED!");
+		});
 	}
 
 	Send(command, message)

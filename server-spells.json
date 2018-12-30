@@ -44,7 +44,7 @@
     "type": "special",
     "cost": 3,
     "effect": 3,
-    "desc": "Heal yourself or#your ally, cannot#resurect the dead.",
+    "desc": "Heal yourself or#your ally, cannot#resurrect the dead.",
     "targets": "team"
   },
   {
