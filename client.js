@@ -85,6 +85,7 @@ var playerName = "";
 var timeSinceStart = 0.0;
 var dotTimer = 0;
 var connectionTime;
+var targetPlayer = 1;
 
 
 window.addEventListener("load", function()
@@ -172,10 +173,10 @@ function CreateObjects()
 
     spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 700, "SPELL DESCRIPTION", 20, "white");
     spellDescription.SetSplitter('#', "top");
-    player_1_btn = new ButtonObject(new Vector2(50,50), 100, 200, "1", 25);
-    player_2_btn = new ButtonObject(new Vector2(50,250), 100, 200, "1", 25);
-    player_3_btn = new ButtonObject(new Vector2(650,50), 100, 200, "1", 25);
-    player_4_btn = new ButtonObject(new Vector2(650,250), 100, 200, "1", 25);
+    player_1_btn = new ButtonObject(new Vector2(50,50), 100, 50, "1", 25);
+    player_2_btn = new ButtonObject(new Vector2(50,250), 100, 50, "1", 25);
+    player_3_btn = new ButtonObject(new Vector2(650,50), 100, 50, "1", 25);
+    player_4_btn = new ButtonObject(new Vector2(650,250), 100, 50, "1", 25);
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_1_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_1_img);
@@ -559,6 +560,15 @@ function Update()
         else if(GetKeyDown("arrowleft"))
         {
             special_btn.Press();
+        }
+    }
+    else if(gameState == "CHOOSING_TARGET")
+    {
+        if(GetKeyDown("arrowright"))
+        {
+        }
+        else if(GetKeyDown("arrowleft"))
+        {
         }
     }
     
@@ -1109,6 +1119,10 @@ function LoadSpells()
         else if (newSpell.type == "defend")
         {
             defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
+        }
+        else if (newSpell.type == "special")
+        {
+            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc));
         }
         else if (newSpell.type == "evade")
         {
