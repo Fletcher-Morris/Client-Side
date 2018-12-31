@@ -144,9 +144,11 @@ function SetUpNetworking()
         playerData.push(new Player(names[1]));
         playerData.push(new Player(names[2]));
         playerData.push(new Player(names[3]));
+        UpdatePlayerStatsUi();
     });
     socket.on('start game', function(data)
     {
+        UpdatePlayerStatsUi();
         EnterGameState("CHOOSING_ACTION");
     });
 }
@@ -171,15 +173,26 @@ function CreateObjects()
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
 
-    spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 700, "SPELL DESCRIPTION", 20, "white");
+    spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 700, "SPELL DESCRIPTION", 15, "white");
     spellDescription.SetSplitter('#', "top");
+
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
-    player_2_sprite = new ImageObject("player_2", new Vector2(50,250), wizard_1_img);
+    player_2_sprite = new ImageObject("player_2", new Vector2(50,300), wizard_1_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_1_img);
-    player_4_sprite = new ImageObject("player_4", new Vector2(650,250), wizard_1_img);
-    player_1_info = new TextObject("player_1_info", new Vector2(200,50), 200, 100, "player 1#hp : 10#mn : 10#df : 0", 20, "white");
+    player_4_sprite = new ImageObject("player_4", new Vector2(650,300), wizard_1_img);
+    player_1_info = new TextObject("player_1_info", new Vector2(200,50), 200, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
     player_1_info.SetSplitter('#', "top");
     player_1_info.SetAlign("left");
+    player_2_info = new TextObject("player_2_info", new Vector2(200,300), 200, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
+    player_2_info.SetSplitter('#', "top");
+    player_2_info.SetAlign("left");
+    player_3_info = new TextObject("player_3_info", new Vector2(600,50), 200, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
+    player_3_info.SetSplitter('#', "top");
+    player_3_info.SetAlign("right");
+    player_4_info = new TextObject("player_4_info", new Vector2(600,300), 200, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
+    player_4_info.SetSplitter('#', "top");
+    player_4_info.SetAlign("right");
+
     attack_btn = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
     attack_btn.SetFunction("CHOOSING_ATTACK");
     defend_btn = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
@@ -212,6 +225,14 @@ function CreateObjects()
         special_choice_btns.push(spellButton);
         spellButton.Enable(false);
     }
+}
+
+function UpdatePlayerStatsUi()
+{
+    player_1_info.SetText(playerData[0].name + "#hp : 10#mn : 10#df : 0");
+    player_2_info.SetText(playerData[1].name + "#hp : 10#mn : 10#df : 0");
+    player_3_info.SetText(playerData[2].name + "#hp : 10#mn : 10#df : 0");
+    player_4_info.SetText(playerData[3].name + "#hp : 10#mn : 10#df : 0");
 }
 
 //  HANDLE KEY-DOWN EVENTS
@@ -740,7 +761,14 @@ function EnablePlayerSprites(enable)
     player_2_sprite.Enable(enable);
     player_3_sprite.Enable(enable);
     player_4_sprite.Enable(enable);
+    EnablePlayerStats(enable);
+}
+function EnablePlayerStats(enable)
+{
     player_1_info.Enable(enable);
+    player_2_info.Enable(enable);
+    player_3_info.Enable(enable);
+    player_4_info.Enable(enable);
 }
 
 //  RENDER THE SCENE
@@ -824,6 +852,13 @@ class ImageObject extends Object
         this.height = height;
         this.customScale = true;
     }
+    SetImage(image)
+    {
+        if(this.image != image)
+            this.draw = true;
+        this.image = image;
+    }
+
     Enable(enable)
     {
         if(this.enabled == enable) return;

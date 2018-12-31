@@ -260,7 +260,10 @@ class Player
 
 		this.socket.on('disconnect', function()
 		{
-			console.log(this.name + " DISCONNECTED!");
+			if(this.id != 0)
+			{
+				console.log(this.name + " DISCONNECTED!");
+			}
 		});
 	}
 
@@ -359,8 +362,6 @@ function StartGame()
 	}
 
 	console.log("\nGAME STARTED! { " + nameString + " }");
-	SendToPlayers('start game');
-
 	//	SEND THE PLAYERS' NAMES TO EACH PLAYER
 	nameString = "";
 	for(var i = 0; i < 4; i++)
@@ -369,6 +370,7 @@ function StartGame()
 		if(i < 3) nameString += "_";
 	}
 	SendToPlayers('player names', nameString);
+	SendToPlayers('start game');	
 }
 
 function ProccessRound()
