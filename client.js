@@ -85,7 +85,7 @@ var playerName = "";
 var timeSinceStart = 0.0;
 var dotTimer = 0;
 var connectionTime;
-var targetPlayer = 1;
+var targetPlayer;
 
 
 window.addEventListener("load", function()
@@ -206,21 +206,21 @@ function CreateObjects()
 
     for (var i = 0; i < attackSpells.length; i++)
     {
-        var spellButton = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, attackSpells[i].name.toUpperCase(), 20);
+        var spellButton = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, attackSpells[i].name.toUpperCase(), 20);
         spellButton.SetFunction("ACTION_" + attackSpells[i].name);
         attack_choice_btns.push(spellButton);
         spellButton.Enable(false);
     }
     for (var i = 0; i < defendSpells.length; i++)
     {
-        var spellButton = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, defendSpells[i].name.toUpperCase(), 20);
+        var spellButton = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, defendSpells[i].name.toUpperCase(), 20);
         spellButton.SetFunction("ACTION_" + defendSpells[i].name);
         defend_choice_btns.push(spellButton);
         spellButton.Enable(false);
     }
     for (var i = 0; i < specialSpells.length; i++)
     {
-        var spellButton = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 100 - (i * 50)), 150, 50, specialSpells[i].name.toUpperCase(), 20);
+        var spellButton = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, specialSpells[i].name.toUpperCase(), 20);
         spellButton.SetFunction("ACTION_" + specialSpells[i].name);
         special_choice_btns.push(spellButton);
         spellButton.Enable(false);
@@ -648,6 +648,7 @@ function EnterGameState(state, force)
         DisableActiveObjects();
         ClearAll();
         EnablePlayerSprites(true);
+        EnablePlayerStats(true);
         attack_btn.Enable(true);
         defend_btn.Enable(true);
         special_btn.Enable(true);
@@ -660,6 +661,7 @@ function EnterGameState(state, force)
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
+        EnablePlayerStats(true);
         attack_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
@@ -669,6 +671,7 @@ function EnterGameState(state, force)
         EnableDefendOptionObjects(true);
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
+        EnablePlayerStats(true);
         defend_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
@@ -678,6 +681,7 @@ function EnterGameState(state, force)
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(true);
         EnablePlayerSprites(true);
+        EnablePlayerStats(true);
         special_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
@@ -687,6 +691,7 @@ function EnterGameState(state, force)
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(true);
         EnablePlayerSprites(true);
+        EnablePlayerStats(true);
         evade_btn.Hover(true);
         spellDescription.Enable(true);
     }
@@ -696,6 +701,7 @@ function EnterGameState(state, force)
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
+        EnablePlayerStats(true);
     }
     else
     {
@@ -761,10 +767,10 @@ function EnablePlayerSprites(enable)
     player_2_sprite.Enable(enable);
     player_3_sprite.Enable(enable);
     player_4_sprite.Enable(enable);
-    EnablePlayerStats(enable);
 }
 function EnablePlayerStats(enable)
 {
+    UpdatePlayerStatsUi();
     player_1_info.Enable(enable);
     player_2_info.Enable(enable);
     player_3_info.Enable(enable);
