@@ -70,6 +70,7 @@ var buttonPressedThisFrame = true;
 
 //  GAME STUFF
 var gameState = "START";
+var changeToState = "START";
 var hoveredButton = attack_btn;
 var playerName = "";
 var timeSinceStart = 0.0;
@@ -109,22 +110,22 @@ function SetUpNetworking()
     socket.on('refuse connection', function(reason)
     {
         console.log("Connection To Server Refused, Reason : " + reason);
-        EnterGameState("CONNECTION_REFUSED");
+        SetGameState("CONNECTION_REFUSED");
     })
     socket.on('confirm name', function(id)
     {
         connectionTime = timeSinceStart;
-        EnterGameState("CHOOSING_NAME");
+        SetGameState("CHOOSING_NAME");
     });
     socket.on('player count', function(count)
     {
         connectedPlayers = count;
-        EnterGameState("WAITING_FOR_PLAYERS", true);
+        SetGameState("WAITING_FOR_PLAYERS", true);
     });
     socket.on('queue length', function(count)
     {
         connectedPlayers = count;
-        EnterGameState("JOINING_QUEUE", true);
+        SetGameState("JOINING_QUEUE", true);
     });
     socket.on('player names', function(nameString)
     {
@@ -134,12 +135,12 @@ function SetUpNetworking()
         playerData.push(new Player(names[1], player_2_sprite, player_2_info));
         playerData.push(new Player(names[2], player_3_sprite, player_3_info));
         playerData.push(new Player(names[3], player_4_sprite, player_4_info));
-        UpdatePlayerStatsUi();
+        UpdatePlayerStatsText();
     });
     socket.on('start game', function(data)
     {
         UpdatePlayerStatsText();
-        EnterGameState("CHOOSING_ACTION");
+        SetGameState("CHOOSING_ACTION");
     });
     socket.on('player stats', function(data)
     {
@@ -389,13 +390,15 @@ function AppendStringWithInput(text, max)
 //  UPDATE OBJECTS IN THE SCENE
 function Update()
 {
+    EnterGameState(changeToState);
+
     timeSinceStart += 1.0/FPS_LIMIT;
 
     buttonPressedThisFrame = false;
 
     if(gameState == "START")
     {
-        EnterGameState("CONNECTING_TO_SERVER");
+        SetGameState("CONNECTING_TO_SERVER");
     }
     else if(gameState == "CONNECTING_TO_SERVER")
     {
@@ -473,11 +476,11 @@ function Update()
 
         if(GetKeyDown("arrowright"))
         {
-            if(hoveredButton == attack_btn) EnterGameState("CHOOSING_DEFEND");
+            if(hoveredButton == attack_btn) SetGameState("CHOOSING_DEFEND");
         }
         else if(GetKeyDown("arrowleft"))
         {
-            if(hoveredButton == attack_btn) EnterGameState("CHOOSING_EVADE");
+            if(hoveredButton == attack_btn) SetGameState("CHOOSING_EVADE");
         }
     }
     else if(gameState == "CHOOSING_ATTACK")
@@ -515,7 +518,7 @@ function Update()
         }
         else if(GetKeyDown("arrowleft"))
         {
-            EnterGameState("CHOOSING_EVADE");
+            SetGameState("CHOOSING_EVADE");
         }
     }
     else if(gameState == "CHOOSING_DEFEND")
@@ -592,7 +595,7 @@ function Update()
         }
         else if(GetKeyDown("arrowright"))
         {
-            EnterGameState("CHOOSING_EVADE");
+            SetGameState("CHOOSING_EVADE");
         }
         else if(GetKeyDown("arrowleft"))
         {
@@ -636,50 +639,52 @@ function Update()
     FixInput();
 }
 
-function EnterGameState(state, force)
+function SetGameState(state)
 {
-    if(state == gameState && force !== true)
-    {
-        console.log("GAMESTATE IS ALREADY '" + state + "'");
-        return;
-    }
+    changeToState = state;
+}
+function EnterGameState(force)
+{
+    if(changeToState == undefined) return;
+    if(changeToState == gameState && force !== true) return;
+
     var isState = true;
 
-    if(state == "CONNECTING_TO_SERVER")
+    if(changeToState == "CONNECTING_TO_SERVER")
     {
         DisableActiveObjects();
         server_text_message.Enable(true);
         SetUpNetworking();
     }
-    else if(state == "CHOOSING_NAME")
+    else if(changeToState == "CHOOSING_NAME")
     {
         DisableActiveObjects();
         server_text_message.text = "CHOOSE A NAME";
         server_text_message.Enable(true);
         nickname_text.Enable(true);
     }
-    else if(state == "JOINING_QUEUE")
+    else if(changeToState == "JOINING_QUEUE")
     {
         DisableActiveObjects();
         ClearAll();
         server_text_message.text = "SERVER FULL (" + (connectedPlayers) + " IN QUEUE)";
         server_text_message.Enable(true);
     }
-    else if(state == "WAITING_FOR_PLAYERS")
+    else if(changeToState == "WAITING_FOR_PLAYERS")
     {
         DisableActiveObjects();
         ClearAll();
         server_text_message.text = "WAITING FOR PLAYERS (" + connectedPlayers + "/4)";
         server_text_message.Enable(true);
     }
-    else if(state == "CONNECTION_REFUSED")
+    else if(changeToState == "CONNECTION_REFUSED")
     {
         EnableAllObjects(false);
         ClearAll();
         server_text_message.text = "CONNECTION REFUSED";
         server_text_message.Enable(true); 
     }
-    else if(state == "CHOOSING_ACTION")
+    else if(changeToState == "CHOOSING_ACTION")
     {
         DisableActiveObjects();
         ClearAll();
@@ -691,7 +696,7 @@ function EnterGameState(state, force)
         evade_btn.Enable(true);
         attack_btn.Hover(true);
     }
-    else if(state == "CHOOSING_ATTACK")
+    else if(changeToState == "CHOOSING_ATTACK")
     {
         EnableAttackOptionObjects(true);
         EnableDefendOptionObjects(false);
@@ -701,7 +706,7 @@ function EnterGameState(state, force)
         attack_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
-    else if(state == "CHOOSING_DEFEND")
+    else if(changeToState == "CHOOSING_DEFEND")
     {
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(true);
@@ -711,7 +716,7 @@ function EnterGameState(state, force)
         defend_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
-    else if(state == "CHOOSING_SPECIAL")
+    else if(changeToState == "CHOOSING_SPECIAL")
     {
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
@@ -721,17 +726,17 @@ function EnterGameState(state, force)
         special_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
-    else if(state == "CHOOSING_EVADE")
+    else if(changeToState == "CHOOSING_EVADE")
     {
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
-        EnableSpecialOptionObjects(true);
+        EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
         evade_btn.Hover(true);
         spellDescription.Enable(true);
     }
-    else if(state == "CHOOSING_TARGET")
+    else if(changeToState == "CHOOSING_TARGET")
     {
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
@@ -746,12 +751,13 @@ function EnterGameState(state, force)
 
     if(isState)
     {
-        gameState = state;
+        gameState = changeToState;
+        changeToState = undefined;
         console.log(("ENTERED GAME STATE : ") + gameState);
     }
     else
     {
-        console.log("'" + state + "' IS NOT A STATE");
+        console.log("'" + changeToState + "' IS NOT A STATE");
     }
 }
 
@@ -1080,15 +1086,15 @@ function CallButtonFunction(functionString)
     }
     else if(functionString == "CHOOSING_ATTACK")
     {
-        EnterGameState("CHOOSING_ATTACK");
+        SetGameState("CHOOSING_ATTACK");
     }
     else if(functionString == "CHOOSING_DEFEND")
     {
-        EnterGameState("CHOOSING_DEFEND");
+        SetGameState("CHOOSING_DEFEND");
     }
     else if(functionString == "CHOOSING_SPECIAL")
     {
-        EnterGameState("CHOOSING_SPECIAL");
+        SetGameState("CHOOSING_SPECIAL");
     }
     else if(functionString == "CHOOSING_EVADE")
     {
