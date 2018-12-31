@@ -28,20 +28,10 @@ var evadeSpells = [];
 //  IMAGES
 var wizard_1_img = new Image();
 wizard_1_img.src = 'images/wizz.png';
-var wizard_2_img = new Image();
-wizard_2_img.src = 'images/wizard_2_img.png';
-var wizard_3_img = new Image();
-wizard_3_img.src = 'images/wizard_3_img.png';
-var wizard_4_img = new Image();
-wizard_4_img.src = 'images/wizard_4_img.png';
-var wizard_5_img = new Image();
-wizard_5_img.src = 'images/wizard_5_img.png';
-var wizard_6_img = new Image();
-wizard_6_img.src = 'images/wizard_6_img.png';
-var wizard_7_img = new Image();
-wizard_7_img.src = 'images/wizard_7_img.png';
-var wizard_8_img = new Image();
-wizard_8_img.src = 'images/wizard_8_img.png';
+var wizard_1_highlight_img = new Image();
+wizard_1_highlight_img.src = 'images/wizz_highlight.png';
+var wizard_1_dead_img = new Image();
+wizard_1_dead_img.src = 'images/wizz_dead.png';
 
 //  OBJECTS
 var all_Objects = [];
@@ -140,25 +130,71 @@ function SetUpNetworking()
     {
         var names = nameString.split("_");
         playerData = new Array();
-        playerData.push(new Player(names[0]));
-        playerData.push(new Player(names[1]));
-        playerData.push(new Player(names[2]));
-        playerData.push(new Player(names[3]));
+        playerData.push(new Player(names[0], player_1_sprite, player_1_info));
+        playerData.push(new Player(names[1], player_2_sprite, player_2_info));
+        playerData.push(new Player(names[2], player_3_sprite, player_3_info));
+        playerData.push(new Player(names[3], player_4_sprite, player_4_info));
         UpdatePlayerStatsUi();
     });
     socket.on('start game', function(data)
     {
-        UpdatePlayerStatsUi();
+        UpdatePlayerStatsText();
         EnterGameState("CHOOSING_ACTION");
+    });
+    socket.on('player stats', function(data)
+    {
+        console.log(data);
+        for(var i = 0; i < 4; i ++)
+        {
+            playerData[i].SetStats(data[i].name, data[i].health, data[i].mana, data[i].defence);
+        }
+        UpdatePlayerStatsText();
     });
 }
 
 class Player
 {
-    constructor(name)
+    constructor(name, sprite, stats)
     {
         this.name = name;
+        this.sprite = sprite;
+        this.stats = stats;
+        this.health = 10;
+        this.mana = 10;
+        this.defence = 0;
         console.log("Created Player : " + this.name);
+    }
+
+    SetStats(name, health, mana, defence)
+    {
+        this.name = name;
+        this.health = health;
+        this.mana = mana;
+        this.defence = defence;
+
+        if(this.health <= 0)
+        {
+            this.SetSpriteImage(wizard_1_dead_img);
+        }
+    }
+
+    SetSpriteImage(image)
+    {
+        this.sprite.SetImage(image);
+    }
+
+    RedrawSprite()
+    {
+        this.sprite.Redraw();
+    }
+
+    UpdateStatsText()
+    {
+        var newText = this.name;
+        newText += "#hp : " + this.health;
+        newText += "#mn : " + this.mana;
+        newText += "#df : " + this.defence;
+        this.stats.SetText(newText);
     }
 }
 
@@ -227,12 +263,12 @@ function CreateObjects()
     }
 }
 
-function UpdatePlayerStatsUi()
+function UpdatePlayerStatsText()
 {
-    player_1_info.SetText(playerData[0].name + "#hp : 10#mn : 10#df : 0");
-    player_2_info.SetText(playerData[1].name + "#hp : 10#mn : 10#df : 0");
-    player_3_info.SetText(playerData[2].name + "#hp : 10#mn : 10#df : 0");
-    player_4_info.SetText(playerData[3].name + "#hp : 10#mn : 10#df : 0");
+    for(var i = 0; i < 4; i ++)
+    {
+        playerData[i].UpdateStatsText();
+    }
 }
 
 //  HANDLE KEY-DOWN EVENTS
@@ -770,7 +806,7 @@ function EnablePlayerSprites(enable)
 }
 function EnablePlayerStats(enable)
 {
-    UpdatePlayerStatsUi();
+    UpdatePlayerStatsText();
     player_1_info.Enable(enable);
     player_2_info.Enable(enable);
     player_3_info.Enable(enable);
@@ -832,6 +868,10 @@ class Object
         {
 
         }
+        else
+        {
+            this.draw = false;
+        }
     }
 
     SetPosition(x, y)
@@ -861,7 +901,7 @@ class ImageObject extends Object
     SetImage(image)
     {
         if(this.image != image)
-            this.draw = true;
+            this.Redraw();
         this.image = image;
     }
 
@@ -872,11 +912,20 @@ class ImageObject extends Object
         this.draw = enable;
     }
 
+    Redraw()
+    {
+        this.draw = true;
+    }
+
     Update()
     {
         if(this.enabled)
         {
             super.Update();
+        }
+        else
+        {
+            this.draw = false;
         }
     }
 
@@ -947,6 +996,10 @@ class ButtonObject extends Object
                     this.Press();
                 }
             }
+        }
+        else
+        {
+            this.draw = false;
         }
     }
 

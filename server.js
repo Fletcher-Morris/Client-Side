@@ -124,6 +124,17 @@ function ConfirmWizard(socket, name)
 	}
 }
 
+function SendStatsToPlayers()
+{
+	var players = ConnectedPlayers();
+	var statsArray = new Array();
+	for(var i = 0; i < players.length; i++)
+	{
+		statsArray.push(players[i].GetStats());
+	}
+	SendToPlayers('player stats', statsArray);
+}
+
 function TryStartGame()
 {
 	if(gameInProgress == true)
@@ -324,6 +335,23 @@ class Player
 	DeathCheck()
 	{
 		if(this.health <= 0) this.Death();
+	}
+
+	GetStats()
+	{
+		return new SimpleStats (this.id, this.name, this.health, this.mana, this.defence);
+	}
+}
+
+class SimpleStats
+{
+	constructor(id, name, health, mana, defence)
+	{
+		this.id = id;
+		this.name = name;
+		this.health = health;
+		this.mana = mana;
+		this.defence = defence;
 	}
 }
 
@@ -553,6 +581,8 @@ function ProccessRound()
 		p.action = undefined;
 		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + ", Defence: " + p.defence + " }");
 	}
+
+	SendStatsToPlayers();
 	gameRound ++;
 
 	console.log("\n");
