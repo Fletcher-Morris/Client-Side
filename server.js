@@ -68,7 +68,7 @@ setInterval(function()
 	{
 		if(players[i] != undefined)
 		{
-			if(players[i].timeout < 0 && player[i].dead == false)
+			if(players[i].timeout < 0 && players[i].dead == false)
 			{
 				if(gameInProgress)
 				{

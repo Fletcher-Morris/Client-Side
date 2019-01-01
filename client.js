@@ -210,23 +210,23 @@ function CreateObjects()
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
 
-    spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 700, "SPELL DESCRIPTION", 15, "white");
+    spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 300, "SPELL DESCRIPTION", 15, "white");
     spellDescription.SetSplitter('#', "top");
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50,300), wizard_1_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_1_img);
     player_4_sprite = new ImageObject("player_4", new Vector2(650,300), wizard_1_img);
-    player_1_info = new TextObject("player_1_info", new Vector2(200,50), 200, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
+    player_1_info = new TextObject("player_1_info", new Vector2(200,50), 250, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
     player_1_info.SetSplitter('#', "top");
     player_1_info.SetAlign("left");
-    player_2_info = new TextObject("player_2_info", new Vector2(200,300), 200, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
+    player_2_info = new TextObject("player_2_info", new Vector2(200,300), 250, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
     player_2_info.SetSplitter('#', "top");
     player_2_info.SetAlign("left");
-    player_3_info = new TextObject("player_3_info", new Vector2(600,50), 200, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
+    player_3_info = new TextObject("player_3_info", new Vector2(600,50), 250, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
     player_3_info.SetSplitter('#', "top");
     player_3_info.SetAlign("right");
-    player_4_info = new TextObject("player_4_info", new Vector2(600,300), 200, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
+    player_4_info = new TextObject("player_4_info", new Vector2(600,300), 250, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
     player_4_info.SetSplitter('#', "top");
     player_4_info.SetAlign("right");
 
@@ -482,6 +482,8 @@ function Update()
         {
             if(hoveredButton == attack_btn) SetGameState("CHOOSING_EVADE");
         }
+
+        RedrawPlayerSprites();
     }
     else if(gameState == "CHOOSING_ATTACK")
     {
@@ -520,6 +522,8 @@ function Update()
         {
             SetGameState("CHOOSING_EVADE");
         }
+
+        RedrawPlayerSprites();
     }
     else if(gameState == "CHOOSING_DEFEND")
     {
@@ -557,6 +561,8 @@ function Update()
         {
             attack_btn.Press();
         }
+
+        RedrawPlayerSprites();
     }
     else if(gameState == "CHOOSING_SPECIAL")
     {
@@ -570,7 +576,7 @@ function Update()
         var spellText = "";
         spellText += (hoveredSpell.name.toUpperCase() + "#");
         spellText += ("COST : " + hoveredSpell.cost + "#");
-        if(hoveredSpell.name = "heal")
+        if(hoveredSpell.name == "heal")
         {
             spellText += ("EFFECT : +" + hoveredSpell.effect + "#");
         }
@@ -601,6 +607,8 @@ function Update()
         {
             defend_btn.Press();
         }
+
+        RedrawPlayerSprites();
     }
     else if(gameState == "CHOOSING_EVADE")
     {
@@ -620,6 +628,8 @@ function Update()
         {
             special_btn.Press();
         }
+
+        RedrawPlayerSprites();
     }
     else if(gameState == "CHOOSING_TARGET")
     {
@@ -629,6 +639,8 @@ function Update()
         else if(GetKeyDown("arrowleft"))
         {
         }
+
+        RedrawPlayerSprites();
     }
     
     for (var i = 0; i < all_Objects.length; i++)
@@ -725,6 +737,8 @@ function EnterGameState(force)
         EnablePlayerStats(true);
         special_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
+
+        console.log(loadedSpells);
     }
     else if(changeToState == "CHOOSING_EVADE")
     {
@@ -809,6 +823,13 @@ function EnablePlayerSprites(enable)
     player_2_sprite.Enable(enable);
     player_3_sprite.Enable(enable);
     player_4_sprite.Enable(enable);
+}
+function RedrawPlayerSprites()
+{
+    for(var i = 0; i < 4; i++)
+    {
+        playerData[i].RedrawSprite();
+    }
 }
 function EnablePlayerStats(enable)
 {
