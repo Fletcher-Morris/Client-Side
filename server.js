@@ -47,39 +47,6 @@ io.on('connection', function(socket) {
 
 });
 
-io.on('disconnect', function(socket) {
-	console.log("\nSomeone disconnected @ " + socket);
-});
-
-
-setInterval(function()
-{
-  SendToPlayers('marco');
-  var players = ConnectedPlayers();
-  for(var i = 0; i < players.length; i++)
-  {
-  	players[i].timeout --;
-  }
-}, 1000);
-setInterval(function()
-{
-	var players = ConnectedPlayers();
-	for(var i = 0; i < players.length; i++)
-	{
-		if(players[i] != undefined)
-		{
-			if(players[i].timeout < 0 && players[i].dead == false)
-			{
-				if(gameInProgress)
-				{
-					console.log("\nPLAYER " + players[i].name + " HAS TIMED OUT!");
-					players[i].Death();
-				}
-			}
-		}
-	}
-}, (timeoutTime + 1) * 1000);
-
 function LoadSettings()
 {
 	port = serverSettings.port;
@@ -265,16 +232,17 @@ class Player
 		this.id = id;
 		this.timeout = 5;
 		this.dead = false;
+		this.inGame = false;
 		this.defence = 0;
 		this.evadedNothing = true;
 		this.multiplier = 1.0;
+	}
 
+	EnterGame()
+	{
 		this.socket.on('disconnect', function()
 		{
-			if(this.id != 0)
-			{
-				console.log(this.name + " DISCONNECTED!");
-			}
+			console.log(this.id.toString() + " DISCONNECTED!");
 		});
 	}
 
@@ -283,10 +251,6 @@ class Player
 		this.socket.emit(command, message);
 	}
 
-	Polo()
-	{
-		this.timeout = 5;
-	}
 
 	SetAction(act)
 	{
@@ -387,16 +351,11 @@ function StartGame()
 	{
 		nameString += GetPlayerById(i + 1).name;
 		if(i < 3) nameString += ", ";
+		GetPlayerById(i + 1).EnterGame();
 	}
 
 	console.log("\nGAME STARTED! { " + nameString + " }");
 	//	SEND THE PLAYERS' NAMES TO EACH PLAYER
-	nameString = "";
-	for(var i = 0; i < 4; i++)
-	{
-		nameString += GetPlayerById(i + 1).name;
-		if(i < 3) nameString += "_";
-	}
 	SendToPlayers('player names', nameString);
 	SendToPlayers('start game');	
 }

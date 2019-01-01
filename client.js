@@ -1,4 +1,4 @@
-
+//  WIZARD WARS, CREATED BY FLETCHER MORRIS
 
 //  NETWORK STUFF
 var serverAddress = 'http://localhost';
@@ -129,7 +129,7 @@ function SetUpNetworking()
     });
     socket.on('player names', function(nameString)
     {
-        var names = nameString.split("_");
+        var names = nameString.split(",");
         playerData = new Array();
         playerData.push(new Player(names[0], player_1_sprite, player_1_info));
         playerData.push(new Player(names[1], player_2_sprite, player_2_info));
