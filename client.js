@@ -155,10 +155,10 @@ function SetUpNetworking()
     });
     socket.on('player stats', function(data)
     {
-        console.log(data);
         for(var i = 0; i < 4; i ++)
         {
-            playerData[i].SetStats(data[i].name, data[i].health, data[i].mana, data[i].defence);
+
+            GetPlayerById(data[i].id).SetStats(data[i].health, data[i].mana, data[i].defence);
         }
         UpdatePlayerStatsText();
     });
@@ -198,9 +198,8 @@ class Player
         }
     }
 
-    SetStats(name, health, mana, defence)
+    SetStats(health, mana, defence)
     {
-        this.name = name;
         this.health = health;
         this.mana = mana;
         this.defence = defence;
@@ -240,6 +239,13 @@ class Player
     {
         targetPlayer = undefined;
         this.SetSpriteImage(wizard_1_img);
+    }
+}
+function GetPlayerById(id)
+{
+    for(var i = 0; i < 4; i++)
+    {
+        if(playerData[i].id == id) return playerData[i];
     }
 }
 
@@ -811,8 +817,6 @@ function EnterGameState(force)
         chosenSpell = undefined;
         special_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
-
-        console.log(loadedSpells);
     }
     else if(changeToState == "CHOOSING_EVADE")
     {
@@ -1381,9 +1385,10 @@ function LoadSpells()
         {
             evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
         }
-
-        console.log(newSpell);
     }
+
+    console.log("Loaded Spells :");
+    console.log(loadedSpells);
 }
 
 class Spell
@@ -1412,7 +1417,6 @@ function SubmitSpell(target, spell)
 {
     var act = new Action(target.id, spell.name);
     socket.emit('action', act);
-    console.log("SUBMITTING SPELL : " + act);
 }
 
 function GetSpell(spellName)

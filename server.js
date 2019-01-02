@@ -274,7 +274,6 @@ class Player
 			}
 		}
 		this.Send('initial stats', statsArray);
-		console.log("Sending Stats To " + this.name + " : " + statsArray.toString());
 	}
 
 	SetAction(act)
