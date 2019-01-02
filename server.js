@@ -281,7 +281,7 @@ class Player
 	{
 		this.action = act;
 		this.action.spell = GetSpell(act.spell);		
-		console.log(this.name + " has chosen the '" + act.spell.name + "' spell");
+		console.log(this.name + " targeted " + GetPlayerById(this.action.target).name + " with the '" + act.spell.name + "' spell");
 		ProccessRound();
 	}
 

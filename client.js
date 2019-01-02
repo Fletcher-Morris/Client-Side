@@ -229,6 +229,18 @@ class Player
         newText += "#df : " + this.defence;
         this.stats.SetText(newText);
     }
+
+    Target()
+    {
+        if(targetPlayer != undefined) targetPlayer.Untarget();
+        targetPlayer = this;
+        this.SetSpriteImage(wizard_1_highlight_img);
+    }
+    Untarget()
+    {
+        targetPlayer = undefined;
+        this.SetSpriteImage(wizard_1_img);
+    }
 }
 
 function CreateObjects()
@@ -665,12 +677,33 @@ function Update()
     }
     else if(gameState == "CHOOSING_TARGET")
     {
-
         if(GetKeyDown("arrowright"))
         {
+            FindNextTarget().Target();
         }
         else if(GetKeyDown("arrowleft"))
         {
+            FindNextTarget().Target();
+        }
+        else if(GetKeyDown("arrowup"))
+        {
+            FindNextTarget().Target();
+        }
+        else if(GetKeyDown("arrowdown"))
+        {
+            FindNextTarget().Target();
+        }
+        else if(GetKeyDown("esc"))
+        {
+            SetGameState("CHOOSING_ACTION");
+        }
+        else if(GetKeyDown("backspace"))
+        {
+            SetGameState("CHOOSING_ACTION");
+        }
+        else if(GetKeyDown("enter"))
+        {
+            SubmitSpell(targetPlayer, chosenSpell);
         }
 
         RedrawPlayerSprites();
@@ -800,6 +833,7 @@ function EnterGameState(force)
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
+        FindNextTarget().Target();
     }
     else
     {
@@ -881,6 +915,60 @@ function EnablePlayerStats(enable)
     player_2_info.Enable(enable);
     player_3_info.Enable(enable);
     player_4_info.Enable(enable);
+}
+function FindNextTarget()
+{
+    var availableTargets = new Array();
+    if(chosenSpell.targets == "enemies")
+    {
+        availableTargets = GetLivingEnemies();
+        if(availableTargets.length == 1) return availableTargets[0];
+        for(var i = 0; i < availableTargets.length; i++)
+        {
+            if(availableTargets[i] != targetPlayer) return availableTargets[i];
+        }
+    }
+    else if(chosenSpell.targets == "team")
+    {
+        availableTargets = GetLivingTeam();
+        if(availableTargets.length == 1) return availableTargets[0];
+        for(var i = 0; i < availableTargets.length; i++)
+        {
+            if(availableTargets[i] != targetPlayer) return availableTargets[i];
+        }
+    }
+    else if(chosenSpell.targets == "ally")
+    {
+        if(teamPlayers[1].health >= 1) return teamPlayers[1];
+        else return undefined;
+    }
+    else if(chosenSpell.targets == "self")
+    {
+        return selfPlayer;
+    }
+    else
+    {
+        console.log("COULD NOT IDENTIFY SPELL TATGET TYPE : " + chosenSpell.targets);
+        return undefined;
+    }
+}
+function GetLivingEnemies()
+{
+    var result = new Array();
+    for(var i = 0; i < 2; i++)
+    {
+        if(enemyPlayers[i].health >= 1) result.push(enemyPlayers[i]);
+    }
+    return result;
+}
+function GetLivingTeam()
+{
+    var result = new Array();
+    for(var i = 0; i < 2; i++)
+    {
+        if(teamPlayers[i].health >= 1) result.push(teamPlayers[i]);
+    }
+    return result;
 }
 
 //  RENDER THE SCENE
@@ -1164,13 +1252,9 @@ function CallButtonFunction(functionString)
     {
 
     }
-    else if(functionString.includes("SUBMIT_ACTION"))
-    {
-        SubmitSpell(targetPlayer, chosenSpell);
-    }
     else if(functionString.includes("ACTION_"))
     {
-        chosenSpell = functionString.split('_')[1];
+        chosenSpell = GetSpell(functionString.split('_')[1]);
         SetGameState("CHOOSING_TARGET");
     }    
 }
@@ -1326,7 +1410,7 @@ class Action
 
 function SubmitSpell(target, spell)
 {
-    var act = new Action(target, spell.name);
+    var act = new Action(target.id, spell.name);
     socket.emit('action', act);
     console.log("SUBMITTING SPELL : " + act);
 }
