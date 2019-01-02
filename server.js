@@ -236,6 +236,15 @@ class Player
 		this.defence = 0;
 		this.evadedNothing = true;
 		this.multiplier = 1.0;
+
+		if(this.id == 1 || this.id == 2)
+		{
+			this.team = "A";
+		}
+		else if(this.id == 3 || this.id == 4)
+		{
+			this.team = "B";
+		}
 	}
 
 	EnterGame()
@@ -251,6 +260,22 @@ class Player
 		this.socket.emit(command, message);
 	}
 
+	SendInitialPlayerData()
+	{
+		var str = "";
+		var players = ConnectedPlayers();
+		var statsArray = new Array();
+		statsArray.push(this.GetStats());
+		for(var i = 0; i < players.length; i++)
+		{
+			if(players[i].id != this.id)
+			{
+				statsArray.push(players[i].GetStats());
+			}
+		}
+		this.Send('initial stats', statsArray);
+		console.log("Sending Stats To " + this.name + " : " + statsArray.toString());
+	}
 
 	SetAction(act)
 	{
@@ -303,16 +328,17 @@ class Player
 
 	GetStats()
 	{
-		return new SimpleStats (this.id, this.name, this.health, this.mana, this.defence);
+		return new SimpleStats (this.id, this.name, this.team, this.health, this.mana, this.defence);
 	}
 }
 
 class SimpleStats
 {
-	constructor(id, name, health, mana, defence)
+	constructor(id, name, team, health, mana, defence)
 	{
 		this.id = id;
 		this.name = name;
+		this.team = team;
 		this.health = health;
 		this.mana = mana;
 		this.defence = defence;
@@ -338,6 +364,14 @@ function ConnectedPlayers()
 	return result;
 }
 
+function SendInitialStats()
+{
+	player1.SendInitialPlayerData();
+	player2.SendInitialPlayerData();
+	player3.SendInitialPlayerData();
+	player4.SendInitialPlayerData();
+}
+
 function StartGame()
 {
 	gameInProgress = true;
@@ -356,7 +390,7 @@ function StartGame()
 
 	console.log("\nGAME STARTED! { " + nameString + " }");
 	//	SEND THE PLAYERS' NAMES TO EACH PLAYER
-	SendToPlayers('player names', nameString);
+	SendInitialStats();
 	SendToPlayers('start game');	
 }
 
@@ -549,13 +583,13 @@ function ProccessRound()
 
 function HandlePlayerDeath(player)
 {
-	if(GetPlayerById(1).dead && GetPlayerById(2).dead)
+	if(player1.dead == true && player2.dead == true)
 	{
 		//	TEAM 2 WINS
 		winningTeam = 2;
 		EndGame(winningTeam);
 	}
-	else if(GetPlayerById(3).dead && GetPlayerById(4).dead)
+	else if(player3.dead == true && player4.dead == true)
 	{
 		//	TEAM 1 WINS
 		winningTeam = 1;

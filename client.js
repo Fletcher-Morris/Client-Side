@@ -76,7 +76,11 @@ var playerName = "";
 var timeSinceStart = 0.0;
 var dotTimer = 0;
 var connectionTime;
+var hoveredSpell;
+var chosenSpell;
+var selfPlayer;
 var targetPlayer;
+var teamPlayers, enemyPlayers;
 
 
 window.addEventListener("load", function()
@@ -127,14 +131,21 @@ function SetUpNetworking()
         connectedPlayers = count;
         SetGameState("JOINING_QUEUE", true);
     });
-    socket.on('player names', function(nameString)
+    socket.on('initial stats', function(statsArray)
     {
-        var names = nameString.split(",");
         playerData = new Array();
-        playerData.push(new Player(names[0], player_1_sprite, player_1_info));
-        playerData.push(new Player(names[1], player_2_sprite, player_2_info));
-        playerData.push(new Player(names[2], player_3_sprite, player_3_info));
-        playerData.push(new Player(names[3], player_4_sprite, player_4_info));
+        selfPlayer = undefined;
+        teamPlayers = new Array();
+        enemyPlayers = new Array();
+
+        playerData.push(new Player(statsArray[0].name, player_1_sprite, player_1_info));
+        playerData[0].SetInitialStats(statsArray[0].id, statsArray[0].name, statsArray[0].team);
+        playerData.push(new Player(statsArray[1].name, player_2_sprite, player_2_info));
+        playerData[1].SetInitialStats(statsArray[1].id, statsArray[1].name, statsArray[1].team);
+        playerData.push(new Player(statsArray[2].name, player_3_sprite, player_3_info));
+        playerData[2].SetInitialStats(statsArray[2].id, statsArray[2].name, statsArray[2].team);
+        playerData.push(new Player(statsArray[3].name, player_4_sprite, player_4_info));
+        playerData[3].SetInitialStats(statsArray[3].id, statsArray[3].name, statsArray[3].team);
         UpdatePlayerStatsText();
     });
     socket.on('start game', function(data)
@@ -164,6 +175,27 @@ class Player
         this.mana = 10;
         this.defence = 0;
         console.log("Created Player : " + this.name);
+    }
+
+    SetInitialStats(id, name, team)
+    {
+        this.id = id;
+        this.name = name;
+        this.team = team;
+
+        if(selfPlayer == undefined)
+        {
+            selfPlayer = this;
+            teamPlayers.push(this);
+        }
+        else if(this.team == selfPlayer.team)
+        {
+            teamPlayers.push(this);
+        }
+        else if(this.team != selfPlayer)
+        {
+            enemyPlayers.push(this);
+        }
     }
 
     SetStats(name, health, mana, defence)
@@ -302,7 +334,7 @@ function ManageKey(e, down)
                     lastLetterKeyDown = keySetArray[keyId];
                 }
             }
-            console.log("KEY " + keySetArray[keyId] + " : DOWN");
+            //console.log("KEY " + keySetArray[keyId] + " : DOWN");
             keyPrevArray[keyId] = true;
         }
     }
@@ -493,7 +525,7 @@ function Update()
             if(attack_choice_btns[i] == hoveredButton) b = i;
         }
 
-        var hoveredSpell = GetSpell(attack_choice_btns[b].text);
+        hoveredSpell = GetSpell(attack_choice_btns[b].text);
         var spellText = "";
         spellText += (hoveredSpell.name.toUpperCase() + "#");
         spellText += ("COST : " + hoveredSpell.cost + "#");
@@ -533,7 +565,7 @@ function Update()
             if(defend_choice_btns[i] == hoveredButton) b = i;
         }
 
-        var hoveredSpell = GetSpell(defend_choice_btns[b].text);
+        hoveredSpell = GetSpell(defend_choice_btns[b].text);
         var spellText = "";
         spellText += (hoveredSpell.name.toUpperCase() + "#");
         spellText += ("COST : " + hoveredSpell.cost + "#");
@@ -572,7 +604,7 @@ function Update()
             if(special_choice_btns[i] == hoveredButton) b = i;
         }
 
-        var hoveredSpell = GetSpell(special_choice_btns[b].text);
+        hoveredSpell = GetSpell(special_choice_btns[b].text);
         var spellText = "";
         spellText += (hoveredSpell.name.toUpperCase() + "#");
         spellText += ("COST : " + hoveredSpell.cost + "#");
@@ -612,7 +644,7 @@ function Update()
     }
     else if(gameState == "CHOOSING_EVADE")
     {
-        var hoveredSpell = GetSpell("evade");
+        hoveredSpell = GetSpell("evade");
         var spellText = "";
         spellText += (hoveredSpell.name.toUpperCase() + "#");
         spellText += ("COST : " + hoveredSpell.cost + "#");
@@ -633,6 +665,7 @@ function Update()
     }
     else if(gameState == "CHOOSING_TARGET")
     {
+
         if(GetKeyDown("arrowright"))
         {
         }
@@ -702,6 +735,8 @@ function EnterGameState(force)
         ClearAll();
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
+        hoveredSpell = undefined;
+        chosenSpell = undefined;
         attack_btn.Enable(true);
         defend_btn.Enable(true);
         special_btn.Enable(true);
@@ -715,6 +750,8 @@ function EnterGameState(force)
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
+        hoveredSpell = undefined;
+        chosenSpell = undefined;
         attack_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
@@ -725,6 +762,8 @@ function EnterGameState(force)
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
+        hoveredSpell = undefined;
+        chosenSpell = undefined;
         defend_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
@@ -735,6 +774,8 @@ function EnterGameState(force)
         EnableSpecialOptionObjects(true);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
+        hoveredSpell = undefined;
+        chosenSpell = undefined;
         special_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
 
@@ -747,6 +788,8 @@ function EnterGameState(force)
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
+        hoveredSpell = GetSpell("evade");
+        chosenSpell = undefined;
         evade_btn.Hover(true);
         spellDescription.Enable(true);
     }
@@ -1121,12 +1164,15 @@ function CallButtonFunction(functionString)
     {
 
     }
+    else if(functionString.includes("SUBMIT_ACTION"))
+    {
+        SubmitSpell(targetPlayer, chosenSpell);
+    }
     else if(functionString.includes("ACTION_"))
     {
-        var act = functionString.split('_')[1];
-        console.log(act);
-        SubmitSpell(act);
-    }
+        chosenSpell = functionString.split('_')[1];
+        SetGameState("CHOOSING_TARGET");
+    }    
 }
 
 class TextObject extends Object
@@ -1278,9 +1324,11 @@ class Action
     }
 }
 
-function SubmitSpell(spell)
+function SubmitSpell(target, spell)
 {
-    socket.emit('action', new Action(1, GetSpell(spell).name));
+    var act = new Action(target, spell.name);
+    socket.emit('action', act);
+    console.log("SUBMITTING SPELL : " + act);
 }
 
 function GetSpell(spellName)
@@ -1303,9 +1351,6 @@ function GetSpell(spellName)
     {
         if(evadeSpells[i].name == spellName) returnSpell = evadeSpells[i];
     }
-
-    if(returnSpell) console.log("FOUND SPELL : " + returnSpell.name);
-    else console.log("SPELL NOT FOUND : " + spellName);
 
     return returnSpell;
 }
