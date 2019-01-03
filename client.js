@@ -98,7 +98,7 @@ window.addEventListener("load", function()
     keyHeldArray = Array(30).fill(false);
     keyPrevArray = Array(30).fill(false);
 
-    LoadSpells();
+    //LoadSpells();
     CreateObjects();
     {
         setInterval(Update, 1000/FPS_LIMIT);
@@ -116,6 +116,13 @@ function SetUpNetworking()
         console.log("Connection To Server Refused, Reason : " + reason);
         SetGameState("CONNECTION_REFUSED");
     })
+    socket.on('spells', function(spellData)
+    {
+        loadedSpells = spellData;
+        LoadSpells();
+        CreateSpellButtons();
+        socket.emit('spells confirmed');
+    });
     socket.on('confirm name', function(id)
     {
         connectionTime = timeSinceStart;
@@ -292,7 +299,9 @@ function CreateObjects()
     evade_btn.SetFunction("ACTION_evade");
 
     hoveredButton = attack_btn;
-
+}
+function CreateSpellButtons()
+{
     for (var i = 0; i < attackSpells.length; i++)
     {
         var spellButton = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, attackSpells[i].name.toUpperCase(), 20);
@@ -957,6 +966,8 @@ function FindNextTarget()
         console.log("COULD NOT IDENTIFY SPELL TATGET TYPE : " + chosenSpell.targets);
         return undefined;
     }
+    conssole.log("No targets available for spell '" + chosenSpell + "'");
+    return undefined;
 }
 function GetLivingEnemies()
 {
@@ -1202,7 +1213,7 @@ class ButtonObject extends Object
     SetFunction(functionString)
     {
         this.functionString = functionString;
-        console.log("Set Button " + this.name + " Function : " + this.functionString);
+        //console.log("Set Button " + this.name + " Function : " + this.functionString);
     }
 
     Render()
@@ -1237,7 +1248,7 @@ class ButtonObject extends Object
 
 function CallButtonFunction(functionString)
 {
-    console.log("Trying to call function '" + functionString + "'");
+    //console.log("Trying to call function '" + functionString + "'");
     if(functionString == "SUBMITNAME")
     {
         socket.emit('name is', playerName);
@@ -1365,7 +1376,7 @@ class TextObject extends Object
 
 function LoadSpells()
 {
-    loadedSpells = JSON.parse(JSON.stringify(spellJson));
+    //loadedSpells = JSON.parse(JSON.stringify(spellJson));
 
     for (var i = 0; i < loadedSpells.length; i++) {
 

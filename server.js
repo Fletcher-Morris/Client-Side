@@ -4,7 +4,7 @@ var http = require('http');
 var path = require('path');
 var socketIO = require('socket.io');
 
-var spellsJson = require('./server-spells.json');
+var spellsJson = require('./spells.json');
 var loadedSpells = JSON.parse(JSON.stringify(spellsJson));
 
 var settingsJson = require('./settings.json');
@@ -28,11 +28,12 @@ var queuedPlayers;
 
 // Add the WebSocket handlers
 io.on('connection', function(socket) {
-	ConnectSocket(socket);
+	SendSpellsToSocket(socket);
 
-	socket.on('polo', function(data)
+	socket.on('spells confirmed', function(success)
 	{
-		GetPlayerBySocket(socket).Polo();
+		if(success == false) SendSpellsToSocket(socket);
+		else socket.emit('confirm name');
 	});
 
 	socket.on('name is', function(name)
@@ -72,9 +73,9 @@ function StartServer()
 	player4 = undefined;
 }
 
-function ConnectSocket(socket)
+function SendSpellsToSocket(socket)
 {
-	socket.emit('confirm name');
+	socket.emit('spells', loadedSpells);
 }
 function ConfirmWizard(socket, name)
 {

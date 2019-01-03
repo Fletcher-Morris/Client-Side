@@ -1,4 +1,4 @@
-spellJson = [
+[
   {
     "name": "flames",
     "type": "attack",
@@ -63,4 +63,4 @@ spellJson = [
     "desc": "Dodge incomming attacks,#guaranteed to look dumb,#not guaranteed to work.",
     "targets": "self"
   }
-];
+]
