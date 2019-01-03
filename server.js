@@ -270,7 +270,20 @@ class Player
 		{
 			if(players[i].id != this.id)
 			{
-				statsArray.push(players[i].GetStats());
+				if(players[i].team == this.team)
+				{
+					statsArray.push(players[i].GetStats());
+				}
+			}
+		}
+		for(var i = 0; i < players.length; i++)
+		{
+			if(players[i].id != this.id)
+			{
+				if(players[i].team != this.team)
+				{
+					statsArray.push(players[i].GetStats());
+				}
 			}
 		}
 		this.Send('initial stats', statsArray);

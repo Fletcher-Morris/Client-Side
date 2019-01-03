@@ -138,6 +138,8 @@ function SetUpNetworking()
         teamPlayers = new Array();
         enemyPlayers = new Array();
 
+        console.log(statsArray);
+
         playerData.push(new Player(statsArray[0].name, player_1_sprite, player_1_info));
         playerData[0].SetInitialStats(statsArray[0].id, statsArray[0].name, statsArray[0].team);
         playerData.push(new Player(statsArray[1].name, player_2_sprite, player_2_info));
