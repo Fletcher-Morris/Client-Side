@@ -1614,24 +1614,25 @@ function LoadSpells()
 {
     for (var i = 0; i < loadedSpells.length; i++)
     {
-
         var newSpell = loadedSpells[i];
-
-        if (newSpell.type == "attack")
+        if(GetSpell(newSpell.name) == undefined)
         {
-            attackSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
-        }
-        else if (newSpell.type == "defend")
-        {
-            defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
-        }
-        else if (newSpell.type == "special")
-        {
-            specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
-        }
-        else if (newSpell.type == "evade")
-        {
-            evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
+            if (newSpell.type == "attack")
+            {
+                attackSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
+            }
+            else if (newSpell.type == "defend")
+            {
+                defendSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
+            }
+            else if (newSpell.type == "special")
+            {
+                specialSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
+            }
+            else if (newSpell.type == "evade")
+            {
+                evadeSpells.push(new Spell(newSpell.name, newSpell.type, newSpell.cost, newSpell.effect, newSpell.desc, newSpell.targets));
+            }
         }
     }
 
