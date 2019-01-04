@@ -420,6 +420,8 @@ function ProccessRound()
 	var target;
 	var spell;
 
+	var results;
+
 	//	Check for boost spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
@@ -590,8 +592,13 @@ function ProccessRound()
 
 	SendStatsToPlayers();
 	gameRound ++;
-
+	SendToPlayers('next round');
 	console.log("\n");
+}
+
+function SendRoundResultsToClients(results)
+{
+
 }
 
 function HandlePlayerDeath(player)

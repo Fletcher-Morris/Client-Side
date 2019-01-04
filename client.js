@@ -26,12 +26,15 @@ var specialSpells = [];
 var evadeSpells = [];
 
 //  IMAGES
-var wizard_1_img = new Image();
-wizard_1_img.src = 'images/wizz.png';
-var wizard_1_highlight_img = new Image();
-wizard_1_highlight_img.src = 'images/wizz_highlight.png';
-var wizard_1_dead_img = new Image();
-wizard_1_dead_img.src = 'images/wizz_dead.png';
+var wizard_img = new Image();
+wizard_img.src = 'images/wizz.png';
+var wizard_highlight_img = new Image();
+wizard_highlight_img.src = 'images/wizz_highlight.png';
+var wizard_dead_img = new Image();
+wizard_dead_img.src = 'images/wizz_dead.png';
+var wizard_aim_img = new Image();
+wizard_aim_img.src = 'images/wizz_aiming.png';
+
 
 //  OBJECTS
 var all_Objects = [];
@@ -172,6 +175,10 @@ function SetUpNetworking()
         }
         UpdatePlayerStatsText();
     });
+    socket.on('next round', function(data)
+    {
+        SetGameState("CHOOSING_ACTION", true);
+    });
 }
 
 class Player
@@ -216,7 +223,7 @@ class Player
 
         if(this.health <= 0)
         {
-            this.SetSpriteImage(wizard_1_dead_img);
+            this.SetSpriteImage(wizard_dead_img);
         }
     }
 
@@ -243,12 +250,12 @@ class Player
     {
         if(targetPlayer != undefined) targetPlayer.Untarget();
         targetPlayer = this;
-        this.SetSpriteImage(wizard_1_highlight_img);
+        this.SetSpriteImage(wizard_highlight_img);
     }
     Untarget()
     {
         targetPlayer = undefined;
-        this.SetSpriteImage(wizard_1_img);
+        this.SetSpriteImage(wizard_img);
     }
 }
 function GetPlayerById(id)
@@ -263,43 +270,43 @@ function CreateObjects()
 {
     all_Objects = new Array();
 
-    //  NAME SELECTION PAGE OBJECTS
-    server_text_message = new TextObject("server_message", new Vector2(400,280), 800, 50,"CHOOSE A NAME", 25, "white");
-    nickname_text = new TextObject("name_text", new Vector2(400,320), 400,40,"", 25, "white");
-    submit_name_btn = new ButtonObject(new Vector2(300,450), 200,50,"ENTER", 25);
-    submit_name_btn.SetFunction("SUBMITNAME");
-    submit_name_btn.name = "submit_name_btn";
+//  NAME SELECTION PAGE OBJECTS
+server_text_message = new TextObject("server_message", new Vector2(400,280), 800, 50,"CHOOSE A NAME", 25, "white");
+nickname_text = new TextObject("name_text", new Vector2(400,320), 400,40,"", 25, "white");
+submit_name_btn = new ButtonObject(new Vector2(300,450), 200,50,"ENTER", 25);
+submit_name_btn.SetFunction("SUBMITNAME");
+submit_name_btn.name = "submit_name_btn";
 
-    spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 300, "SPELL DESCRIPTION", 15, "white");
-    spellDescription.SetSplitter('#', "top");
+spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 300, "SPELL DESCRIPTION", 15, "white");
+spellDescription.SetSplitter('#', "top");
 
-    player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_1_img);
-    player_2_sprite = new ImageObject("player_2", new Vector2(50,300), wizard_1_img);
-    player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_1_img);
-    player_4_sprite = new ImageObject("player_4", new Vector2(650,300), wizard_1_img);
-    player_1_info = new TextObject("player_1_info", new Vector2(200,50), 250, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
-    player_1_info.SetSplitter('#', "top");
-    player_1_info.SetAlign("left");
-    player_2_info = new TextObject("player_2_info", new Vector2(200,300), 250, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
-    player_2_info.SetSplitter('#', "top");
-    player_2_info.SetAlign("left");
-    player_3_info = new TextObject("player_3_info", new Vector2(600,50), 250, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
-    player_3_info.SetSplitter('#', "top");
-    player_3_info.SetAlign("right");
-    player_4_info = new TextObject("player_4_info", new Vector2(600,300), 250, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
-    player_4_info.SetSplitter('#', "top");
-    player_4_info.SetAlign("right");
+player_1_sprite = new ImageObject("player_1", new Vector2(50,50), wizard_img);
+player_2_sprite = new ImageObject("player_2", new Vector2(50,300), wizard_img);
+player_3_sprite = new ImageObject("player_3", new Vector2(650,50), wizard_img);
+player_4_sprite = new ImageObject("player_4", new Vector2(650,300), wizard_img);
+player_1_info = new TextObject("player_1_info", new Vector2(200,50), 250, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
+player_1_info.SetSplitter('#', "top");
+player_1_info.SetAlign("left");
+player_2_info = new TextObject("player_2_info", new Vector2(200,300), 250, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
+player_2_info.SetSplitter('#', "top");
+player_2_info.SetAlign("left");
+player_3_info = new TextObject("player_3_info", new Vector2(600,50), 250, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
+player_3_info.SetSplitter('#', "top");
+player_3_info.SetAlign("right");
+player_4_info = new TextObject("player_4_info", new Vector2(600,300), 250, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
+player_4_info.SetSplitter('#', "top");
+player_4_info.SetAlign("right");
 
-    attack_btn = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
-    attack_btn.SetFunction("CHOOSING_ATTACK");
-    defend_btn = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
-    defend_btn.SetFunction("CHOOSING_DEFEND");
-    special_btn = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
-    special_btn.SetFunction("CHOOSING_SPECIAL");
-    evade_btn = new ButtonObject(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
-    evade_btn.SetFunction("ACTION_evade");
+attack_btn = new ButtonObject(new Vector2(0,CANVAS_HEIGHT - 50), 200,50,"ATTACK", 25);
+attack_btn.SetFunction("CHOOSING_ATTACK");
+defend_btn = new ButtonObject(new Vector2(200,CANVAS_HEIGHT - 50), 200,50,"DEFEND", 25);
+defend_btn.SetFunction("CHOOSING_DEFEND");
+special_btn = new ButtonObject(new Vector2(400,CANVAS_HEIGHT - 50), 200,50,"SPECIAL", 25);
+special_btn.SetFunction("CHOOSING_SPECIAL");
+evade_btn = new ButtonObject(new Vector2(600,CANVAS_HEIGHT - 50), 200,50,"EVADE", 25);
+evade_btn.SetFunction("ACTION_evade");
 
-    hoveredButton = attack_btn;
+hoveredButton = attack_btn;
 }
 function CreateSpellButtons()
 {
@@ -325,6 +332,16 @@ function CreateSpellButtons()
         spellButton.Enable(false);
     }
 }
+function FindObject(name)
+{
+    for(var i = 0; i < all_Objects.length; i++)
+    {
+        if(all_Objects[i].name == name) return all_Objects[i];
+    }
+
+    console.log("Cannot Find Object '" + name + "'");
+    return undefined;
+}
 
 function UpdatePlayerStatsText()
 {
@@ -346,75 +363,75 @@ function KeyUp(e)
 }
 function ManageKey(e, down)
 {
-    //console.log(down);
-    var keyId = GetKeyId(e.key.toLowerCase());
-    if(e.keyCode == 32) keyId = 26;
+//console.log(down);
+var keyId = GetKeyId(e.key.toLowerCase());
+if(e.keyCode == 32) keyId = 26;
 
-    keyHeldArray[keyId] = down;
-    
-    if(down)
+keyHeldArray[keyId] = down;
+
+if(down)
+{
+    if(keyPrevArray[keyId] == false)
     {
-        if(keyPrevArray[keyId] == false)
+        keyDownArray[keyId] = true;
+        if(keySetArray[keyId] != "enter")
         {
-           keyDownArray[keyId] = true;
-           if(keySetArray[keyId] != "enter")
+            if(keySetArray[keyId] != "esc")
             {
-                if(keySetArray[keyId] != "esc")
-                {
-                    lastLetterKeyDown = keySetArray[keyId];
-                }
+                lastLetterKeyDown = keySetArray[keyId];
             }
-            //console.log("KEY " + keySetArray[keyId] + " : DOWN");
-            keyPrevArray[keyId] = true;
         }
-    }
-    else
+//console.log("KEY " + keySetArray[keyId] + " : DOWN");
+keyPrevArray[keyId] = true;
+}
+}
+else
+{
+    if(keyPrevArray[keyId] == true)
     {
-        if(keyPrevArray[keyId] == true)
-        {
-            keyDownArray[keyId] = false;
-            keyPrevArray[keyId] = false;
-        }
+        keyDownArray[keyId] = false;
+        keyPrevArray[keyId] = false;
     }
+}
 }
 function GetKeyId(keyCode)
 {
     var keyId = 0;
-    //console.log(keyCode);
-    if(keyCode == "arrowright")keyCode = "d";
-    else if(keyCode == "arrowleft")keyCode = "a";
-    else if(keyCode == "arrowup")keyCode = "w";
-    else if(keyCode == "arrowdown")keyCode = "s";
-    if(keyCode == "a"){keyId = 0;}
-    else if(keyCode == "b"){keyId = 1;}
-    else if(keyCode == "c"){keyId = 2;}
-    else if(keyCode == "d"){keyId = 3;}
-    else if(keyCode == "e"){keyId = 4;}
-    else if(keyCode == "f"){keyId = 5;}
-    else if(keyCode == "g"){keyId = 6;}
-    else if(keyCode == "h"){keyId = 7;}
-    else if(keyCode == "i"){keyId = 8;}
-    else if(keyCode == "j"){keyId = 9;}
-    else if(keyCode == "k"){keyId = 10;}
-    else if(keyCode == "l"){keyId = 11;}
-    else if(keyCode == "m"){keyId = 12;}
-    else if(keyCode == "n"){keyId = 13;}
-    else if(keyCode == "o"){keyId = 14;}
-    else if(keyCode == "p"){keyId = 15;}
-    else if(keyCode == "q"){keyId = 16;}
-    else if(keyCode == "r"){keyId = 17;}
-    else if(keyCode == "s"){keyId = 18;}
-    else if(keyCode == "t"){keyId = 19;}
-    else if(keyCode == "u"){keyId = 20;}
-    else if(keyCode == "v"){keyId = 21;}
-    else if(keyCode == "w"){keyId = 22;}
-    else if(keyCode == "x"){keyId = 23;}
-    else if(keyCode == "y"){keyId = 24;}
-    else if(keyCode == "z"){keyId = 25;}
-    else if(keyCode == "enter"){keyId = 27;}
-    else if(keyCode == "esc"){keyId = 28;}
-    else if(keyCode == "backspace"){keyId = 29;}
-    return keyId;
+//console.log(keyCode);
+if(keyCode == "arrowright")keyCode = "d";
+else if(keyCode == "arrowleft")keyCode = "a";
+else if(keyCode == "arrowup")keyCode = "w";
+else if(keyCode == "arrowdown")keyCode = "s";
+if(keyCode == "a"){keyId = 0;}
+else if(keyCode == "b"){keyId = 1;}
+else if(keyCode == "c"){keyId = 2;}
+else if(keyCode == "d"){keyId = 3;}
+else if(keyCode == "e"){keyId = 4;}
+else if(keyCode == "f"){keyId = 5;}
+else if(keyCode == "g"){keyId = 6;}
+else if(keyCode == "h"){keyId = 7;}
+else if(keyCode == "i"){keyId = 8;}
+else if(keyCode == "j"){keyId = 9;}
+else if(keyCode == "k"){keyId = 10;}
+else if(keyCode == "l"){keyId = 11;}
+else if(keyCode == "m"){keyId = 12;}
+else if(keyCode == "n"){keyId = 13;}
+else if(keyCode == "o"){keyId = 14;}
+else if(keyCode == "p"){keyId = 15;}
+else if(keyCode == "q"){keyId = 16;}
+else if(keyCode == "r"){keyId = 17;}
+else if(keyCode == "s"){keyId = 18;}
+else if(keyCode == "t"){keyId = 19;}
+else if(keyCode == "u"){keyId = 20;}
+else if(keyCode == "v"){keyId = 21;}
+else if(keyCode == "w"){keyId = 22;}
+else if(keyCode == "x"){keyId = 23;}
+else if(keyCode == "y"){keyId = 24;}
+else if(keyCode == "z"){keyId = 25;}
+else if(keyCode == "enter"){keyId = 27;}
+else if(keyCode == "esc"){keyId = 28;}
+else if(keyCode == "backspace"){keyId = 29;}
+return keyId;
 }
 function GetKeyDown(keyCode)
 {
@@ -499,240 +516,240 @@ function Update()
 
         if(timeSinceStart >= connectionTime + 20.0)
         {
-            //  KICK FOR INACTIVITY
-        }       
-    }
-    else if(gameState == "WAITING_FOR_PLAYERS")
+//  KICK FOR INACTIVITY
+}       
+}
+else if(gameState == "WAITING_FOR_PLAYERS")
+{
+    dotTimer += 2.0/FPS_LIMIT;
+    var txt;
+    if(dotTimer <= 1.0)
     {
-        dotTimer += 2.0/FPS_LIMIT;
-        var txt;
-        if(dotTimer <= 1.0)
-        {
-            txt = "- WAITING FOR PLAYERS (" + connectedPlayers + "/4) |";
-        }
-        else if(dotTimer <= 2.0)
-        {
-            txt = "\\ WAITING FOR PLAYERS (" + connectedPlayers + "/4) /";
-        }
-        else if(dotTimer <= 3.0)
-        {
-            txt = "| WAITING FOR PLAYERS (" + connectedPlayers + "/4) -";
-        }
-        else if(dotTimer <= 4.0)
-        {
-            txt = "/ WAITING FOR PLAYERS (" + connectedPlayers + "/4) \\";
-        }
-        else
-        {
-            dotTimer = 0.0;
-            txt = "- WAITING FOR PLAYERS (" + connectedPlayers + "/4) |";
-        }
-        server_text_message.SetText(txt);
+        txt = "- WAITING FOR PLAYERS (" + connectedPlayers + "/4) |";
     }
-    else if(gameState == "CHOOSING_ACTION")
+    else if(dotTimer <= 2.0)
     {
-        if((hoveredButton != attack_btn) && (hoveredButton != defend_btn) && (hoveredButton != special_btn) && (hoveredButton != evade_btn))
-        {
-            attack_btn.Hover(true);
-        }
-
-        if(GetKeyDown("arrowright"))
-        {
-            if(hoveredButton == attack_btn) SetGameState("CHOOSING_DEFEND");
-        }
-        else if(GetKeyDown("arrowleft"))
-        {
-            if(hoveredButton == attack_btn) SetGameState("CHOOSING_EVADE");
-        }
-
-        RedrawPlayerSprites();
+        txt = "\\ WAITING FOR PLAYERS (" + connectedPlayers + "/4) /";
     }
-    else if(gameState == "CHOOSING_ATTACK")
+    else if(dotTimer <= 3.0)
     {
-        var b = 0;
-        for(var i = 0; i < attack_choice_btns.length; i++)
-        {
-            if(attack_choice_btns[i] == hoveredButton) b = i;
-        }
-
-        hoveredSpell = GetSpell(attack_choice_btns[b].text);
-        var spellText = "";
-        spellText += (hoveredSpell.name.toUpperCase() + "#");
-        spellText += ("COST : " + hoveredSpell.cost + "#");
-        spellText += ("DAMAGE : " + hoveredSpell.effect + "#");
-        spellText += (hoveredSpell.desc);
-        spellDescription.SetText(spellText);
-
-        if(GetKeyDown("arrowup"))
-        {
-            b++;
-            if(b >= attack_choice_btns.length) b = 0;
-            attack_choice_btns[b].Hover(true);
-        }
-        else if(GetKeyDown("arrowdown"))
-        {
-            b--;
-            if(b < 0) b = attack_choice_btns.length - 1;
-            attack_choice_btns[b].Hover(true);
-        }
-        else if(GetKeyDown("arrowright"))
-        {
-            defend_btn.Hover(true);
-            defend_btn.Press();
-        }
-        else if(GetKeyDown("arrowleft"))
-        {
-            SetGameState("CHOOSING_EVADE");
-        }
-
-        RedrawPlayerSprites();
+        txt = "| WAITING FOR PLAYERS (" + connectedPlayers + "/4) -";
     }
-    else if(gameState == "CHOOSING_DEFEND")
+    else if(dotTimer <= 4.0)
     {
-        var b = 0;
-        for(var i = 0; i < defend_choice_btns.length; i++)
-        {
-            if(defend_choice_btns[i] == hoveredButton) b = i;
-        }
-
-        hoveredSpell = GetSpell(defend_choice_btns[b].text);
-        var spellText = "";
-        spellText += (hoveredSpell.name.toUpperCase() + "#");
-        spellText += ("COST : " + hoveredSpell.cost + "#");
-        spellText += ("DEFENCE : +" + hoveredSpell.effect + "#");
-        spellText += (hoveredSpell.desc);
-        spellDescription.SetText(spellText);
-
-        if(GetKeyDown("arrowup"))
-        {
-            b++;
-            if(b >= defend_choice_btns.length) b = 0;
-            defend_choice_btns[b].Hover(true);
-        }
-        else if(GetKeyDown("arrowdown"))
-        {
-            b--;
-            if(b < 0) b = defend_choice_btns.length - 1;
-            defend_choice_btns[b].Hover(true);
-        }
-        else if(GetKeyDown("arrowright"))
-        {
-            special_btn.Press();
-        }
-        else if(GetKeyDown("arrowleft"))
-        {
-            attack_btn.Press();
-        }
-
-        RedrawPlayerSprites();
+        txt = "/ WAITING FOR PLAYERS (" + connectedPlayers + "/4) \\";
     }
-    else if(gameState == "CHOOSING_SPECIAL")
+    else
     {
-        var b = 0;
-        for(var i = 0; i < special_choice_btns.length; i++)
-        {
-            if(special_choice_btns[i] == hoveredButton) b = i;
-        }
-
-        hoveredSpell = GetSpell(special_choice_btns[b].text);
-        var spellText = "";
-        spellText += (hoveredSpell.name.toUpperCase() + "#");
-        spellText += ("COST : " + hoveredSpell.cost + "#");
-        if(hoveredSpell.name == "heal")
-        {
-            spellText += ("EFFECT : +" + hoveredSpell.effect + "#");
-        }
-        else
-        {
-            spellText += ("EFFECT : +" + hoveredSpell.effect + "#");
-        }
-        spellText += (hoveredSpell.desc);
-        spellDescription.SetText(spellText);
-
-        if(GetKeyDown("arrowup"))
-        {
-            b++;
-            if(b >= special_choice_btns.length) b = 0;
-            special_choice_btns[b].Hover(true);
-        }
-        else if(GetKeyDown("arrowdown"))
-        {
-            b--;
-            if(b < 0) b = special_choice_btns.length - 1;
-            special_choice_btns[b].Hover(true);
-        }
-        else if(GetKeyDown("arrowright"))
-        {
-            SetGameState("CHOOSING_EVADE");
-        }
-        else if(GetKeyDown("arrowleft"))
-        {
-            defend_btn.Press();
-        }
-
-        RedrawPlayerSprites();
+        dotTimer = 0.0;
+        txt = "- WAITING FOR PLAYERS (" + connectedPlayers + "/4) |";
     }
-    else if(gameState == "CHOOSING_EVADE")
+    server_text_message.SetText(txt);
+}
+else if(gameState == "CHOOSING_ACTION")
+{
+    if((hoveredButton != attack_btn) && (hoveredButton != defend_btn) && (hoveredButton != special_btn) && (hoveredButton != evade_btn))
     {
-        hoveredSpell = GetSpell("evade");
-        var spellText = "";
-        spellText += (hoveredSpell.name.toUpperCase() + "#");
-        spellText += ("COST : " + hoveredSpell.cost + "#");
-        spellText += ("CHANCE : " + (1.0 / hoveredSpell.effect) + "#");
-        spellText += (hoveredSpell.desc);
-        spellDescription.SetText(spellText);
-
-        if(GetKeyDown("arrowright"))
-        {
-            attack_btn.Press();
-        }
-        else if(GetKeyDown("arrowleft"))
-        {
-            special_btn.Press();
-        }
-
-        RedrawPlayerSprites();
+        attack_btn.Hover(true);
     }
-    else if(gameState == "CHOOSING_TARGET")
+
+    if(GetKeyDown("arrowright"))
     {
-        if(GetKeyDown("arrowright"))
-        {
-            FindNextTarget().Target();
-        }
-        else if(GetKeyDown("arrowleft"))
-        {
-            FindNextTarget().Target();
-        }
-        else if(GetKeyDown("arrowup"))
-        {
-            FindNextTarget().Target();
-        }
-        else if(GetKeyDown("arrowdown"))
-        {
-            FindNextTarget().Target();
-        }
-        else if(GetKeyDown("esc"))
-        {
-            SetGameState("CHOOSING_ACTION");
-        }
-        else if(GetKeyDown("backspace"))
-        {
-            SetGameState("CHOOSING_ACTION");
-        }
-        else if(GetKeyDown("enter"))
-        {
-            SubmitSpell(targetPlayer, chosenSpell);
-        }
-
-        RedrawPlayerSprites();
+        if(hoveredButton == attack_btn) SetGameState("CHOOSING_DEFEND");
     }
-    
-    for (var i = 0; i < all_Objects.length; i++)
+    else if(GetKeyDown("arrowleft"))
     {
-        all_Objects[i].Update();
+        if(hoveredButton == attack_btn) SetGameState("CHOOSING_EVADE");
     }
-    Render();
-    FixInput();
+
+    RedrawPlayerSprites();
+}
+else if(gameState == "CHOOSING_ATTACK")
+{
+    var b = 0;
+    for(var i = 0; i < attack_choice_btns.length; i++)
+    {
+        if(attack_choice_btns[i] == hoveredButton) b = i;
+    }
+
+    hoveredSpell = GetSpell(attack_choice_btns[b].text);
+    var spellText = "";
+    spellText += (hoveredSpell.name.toUpperCase() + "#");
+    spellText += ("COST : " + hoveredSpell.cost + "#");
+    spellText += ("DAMAGE : " + hoveredSpell.effect + "#");
+    spellText += (hoveredSpell.desc);
+    spellDescription.SetText(spellText);
+
+    if(GetKeyDown("arrowup"))
+    {
+        b++;
+        if(b >= attack_choice_btns.length) b = 0;
+        attack_choice_btns[b].Hover(true);
+    }
+    else if(GetKeyDown("arrowdown"))
+    {
+        b--;
+        if(b < 0) b = attack_choice_btns.length - 1;
+        attack_choice_btns[b].Hover(true);
+    }
+    else if(GetKeyDown("arrowright"))
+    {
+        defend_btn.Hover(true);
+        defend_btn.Press();
+    }
+    else if(GetKeyDown("arrowleft"))
+    {
+        SetGameState("CHOOSING_EVADE");
+    }
+
+    RedrawPlayerSprites();
+}
+else if(gameState == "CHOOSING_DEFEND")
+{
+    var b = 0;
+    for(var i = 0; i < defend_choice_btns.length; i++)
+    {
+        if(defend_choice_btns[i] == hoveredButton) b = i;
+    }
+
+    hoveredSpell = GetSpell(defend_choice_btns[b].text);
+    var spellText = "";
+    spellText += (hoveredSpell.name.toUpperCase() + "#");
+    spellText += ("COST : " + hoveredSpell.cost + "#");
+    spellText += ("DEFENCE : +" + hoveredSpell.effect + "#");
+    spellText += (hoveredSpell.desc);
+    spellDescription.SetText(spellText);
+
+    if(GetKeyDown("arrowup"))
+    {
+        b++;
+        if(b >= defend_choice_btns.length) b = 0;
+        defend_choice_btns[b].Hover(true);
+    }
+    else if(GetKeyDown("arrowdown"))
+    {
+        b--;
+        if(b < 0) b = defend_choice_btns.length - 1;
+        defend_choice_btns[b].Hover(true);
+    }
+    else if(GetKeyDown("arrowright"))
+    {
+        special_btn.Press();
+    }
+    else if(GetKeyDown("arrowleft"))
+    {
+        attack_btn.Press();
+    }
+
+    RedrawPlayerSprites();
+}
+else if(gameState == "CHOOSING_SPECIAL")
+{
+    var b = 0;
+    for(var i = 0; i < special_choice_btns.length; i++)
+    {
+        if(special_choice_btns[i] == hoveredButton) b = i;
+    }
+
+    hoveredSpell = GetSpell(special_choice_btns[b].text);
+    var spellText = "";
+    spellText += (hoveredSpell.name.toUpperCase() + "#");
+    spellText += ("COST : " + hoveredSpell.cost + "#");
+    if(hoveredSpell.name == "heal")
+    {
+        spellText += ("EFFECT : +" + hoveredSpell.effect + "#");
+    }
+    else
+    {
+        spellText += ("EFFECT : +" + hoveredSpell.effect + "#");
+    }
+    spellText += (hoveredSpell.desc);
+    spellDescription.SetText(spellText);
+
+    if(GetKeyDown("arrowup"))
+    {
+        b++;
+        if(b >= special_choice_btns.length) b = 0;
+        special_choice_btns[b].Hover(true);
+    }
+    else if(GetKeyDown("arrowdown"))
+    {
+        b--;
+        if(b < 0) b = special_choice_btns.length - 1;
+        special_choice_btns[b].Hover(true);
+    }
+    else if(GetKeyDown("arrowright"))
+    {
+        SetGameState("CHOOSING_EVADE");
+    }
+    else if(GetKeyDown("arrowleft"))
+    {
+        defend_btn.Press();
+    }
+
+    RedrawPlayerSprites();
+}
+else if(gameState == "CHOOSING_EVADE")
+{
+    hoveredSpell = GetSpell("evade");
+    var spellText = "";
+    spellText += (hoveredSpell.name.toUpperCase() + "#");
+    spellText += ("COST : " + hoveredSpell.cost + "#");
+    spellText += ("CHANCE : " + (1.0 / hoveredSpell.effect) + "#");
+    spellText += (hoveredSpell.desc);
+    spellDescription.SetText(spellText);
+
+    if(GetKeyDown("arrowright"))
+    {
+        attack_btn.Press();
+    }
+    else if(GetKeyDown("arrowleft"))
+    {
+        special_btn.Press();
+    }
+
+    RedrawPlayerSprites();
+}
+else if(gameState == "CHOOSING_TARGET")
+{
+    if(GetKeyDown("arrowright"))
+    {
+        FindNextTarget(chosenSpell).Target();
+    }
+    else if(GetKeyDown("arrowleft"))
+    {
+        FindNextTarget(chosenSpell).Target();
+    }
+    else if(GetKeyDown("arrowup"))
+    {
+        FindNextTarget(chosenSpell).Target();
+    }
+    else if(GetKeyDown("arrowdown"))
+    {
+        FindNextTarget(chosenSpell).Target();
+    }
+    else if(GetKeyDown("esc"))
+    {
+        SetGameState("CHOOSING_ACTION");
+    }
+    else if(GetKeyDown("backspace"))
+    {
+        SetGameState("CHOOSING_ACTION");
+    }
+    else if(GetKeyDown("enter"))
+    {
+        SubmitSpell(targetPlayer, chosenSpell);
+    }
+
+    RedrawPlayerSprites();
+}
+
+for (var i = 0; i < all_Objects.length; i++)
+{
+    all_Objects[i].Update();
+}
+Render();
+FixInput();
 }
 
 function SetGameState(state)
@@ -793,6 +810,7 @@ function EnterGameState(force)
         special_btn.Enable(true);
         evade_btn.Enable(true);
         attack_btn.Hover(true);
+        SetAvailableSpells();
     }
     else if(changeToState == "CHOOSING_ATTACK")
     {
@@ -803,6 +821,7 @@ function EnterGameState(force)
         EnablePlayerStats(true);
         hoveredSpell = undefined;
         chosenSpell = undefined;
+        if(targetPlayer != undefined) targetPlayer.Untarget();
         attack_choice_btns[0].Hover(true);
         spellDescription.Enable(true);
     }
@@ -849,7 +868,7 @@ function EnterGameState(force)
         EnableSpecialOptionObjects(false);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
-        FindNextTarget().Target();
+        FindNextTarget(chosenSpell).Target();
     }
     else
     {
@@ -932,10 +951,10 @@ function EnablePlayerStats(enable)
     player_3_info.Enable(enable);
     player_4_info.Enable(enable);
 }
-function FindNextTarget()
+function FindNextTarget(spell)
 {
     var availableTargets = new Array();
-    if(chosenSpell.targets == "enemies")
+    if(spell.targets == "enemies")
     {
         availableTargets = GetLivingEnemies();
         if(availableTargets.length == 1) return availableTargets[0];
@@ -944,7 +963,7 @@ function FindNextTarget()
             if(availableTargets[i] != targetPlayer) return availableTargets[i];
         }
     }
-    else if(chosenSpell.targets == "team")
+    else if(spell.targets == "team")
     {
         availableTargets = GetLivingTeam();
         if(availableTargets.length == 1) return availableTargets[0];
@@ -953,21 +972,21 @@ function FindNextTarget()
             if(availableTargets[i] != targetPlayer) return availableTargets[i];
         }
     }
-    else if(chosenSpell.targets == "ally")
+    else if(spell.targets == "ally")
     {
         if(teamPlayers[1].health >= 1) return teamPlayers[1];
         else return undefined;
     }
-    else if(chosenSpell.targets == "self")
+    else if(spell.targets == "self")
     {
         return selfPlayer;
     }
     else
     {
-        console.log("COULD NOT IDENTIFY SPELL TATGET TYPE : " + chosenSpell.targets);
+        console.log("COULD NOT IDENTIFY SPELL TATGET TYPE : " + spell.targets);
         return undefined;
     }
-    conssole.log("No targets available for spell '" + chosenSpell + "'");
+    console.log("No targets available for spell '" + spell + "'");
     return undefined;
 }
 function GetLivingEnemies()
@@ -1034,7 +1053,7 @@ class Object
         }
         else
         {
-           console.log("Disabled Object : " + this.name); 
+            console.log("Disabled Object : " + this.name); 
         }
     }
 
@@ -1113,7 +1132,7 @@ class ImageObject extends Object
             {
                 context.clearRect(this.pos.x,this.pos.y,this.pos.x+this.width,this.pos.y-this.height);
             }
-            
+
             if(this.enabled)
             {
                 if(this.customScale)
@@ -1140,6 +1159,7 @@ class ButtonObject extends Object
         this.height = height;
         this.text = text;
         this.fontSize = fontSize;
+        this.grey = false;
         rendererButtons.push(this);
         this.draw = true;
     }
@@ -1179,15 +1199,18 @@ class ButtonObject extends Object
         }
     }
 
-    Hover(hover)
+    Hover(hover, force)
     {
         if(hover)
         {
-            if(hoveredButton != this)
+            if(this.grey == false || force == true)
             {
-                hoveredButton.Hover(false);
+                if(hoveredButton != this)
+                {
+                    hoveredButton.Hover(false);
+                }
+                hoveredButton = this;
             }
-            hoveredButton = this;
         }
         if(hover != this.hovered)
         {
@@ -1205,6 +1228,22 @@ class ButtonObject extends Object
         this.hovered = hover;
     }
 
+    GreyOut(makeGrey)
+    {
+        if(makeGrey)
+        {
+            this.grey = makeGrey;
+        }
+        if(makeGrey != this.grey)
+        {
+            if(this.enabled)
+            {
+                this.draw = true;
+                this.clear = true;
+            }
+        }
+    }
+
     Press()
     {
         buttonPressedThisFrame = true;
@@ -1214,7 +1253,6 @@ class ButtonObject extends Object
     SetFunction(functionString)
     {
         this.functionString = functionString;
-        //console.log("Set Button " + this.name + " Function : " + this.functionString);
     }
 
     Render()
@@ -1231,19 +1269,23 @@ class ButtonObject extends Object
             this.clear = false;
         }
         if(this.draw == true)
+        {
+            renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
+            if(this.grey)
             {
-                renderer.SubmitStroke(new RendererStroke(new Vector2(this.pos.x,this.pos.y),this.width,this.height,4,"white"));
-                if(this.hovered)
-                {
-                    renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "yellow", this.fontSize));
-                }
-                else
-                {
-                    renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
-                }
-
-                this.draw = false;
+                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "grey", this.fontSize));
             }
+            else if(this.hovered)
+            {
+                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "yellow", this.fontSize));
+            }
+            else
+            {
+                renderer.SubmitText(new RendererText(this.text, this.pos.x + this.width/2, this.pos.y + (this.height/2), "center", "white", this.fontSize));
+            }
+
+            this.draw = false;
+        }
     }
 }
 
@@ -1377,7 +1419,8 @@ class TextObject extends Object
 
 function LoadSpells()
 {
-    for (var i = 0; i < loadedSpells.length; i++) {
+    for (var i = 0; i < loadedSpells.length; i++)
+    {
 
         var newSpell = loadedSpells[i];
 
@@ -1422,6 +1465,17 @@ class Action
     {
         this.target = target;
         this.spell = spell;
+    }
+}
+
+function SetAvailableSpells()
+{
+    for(var i = 0; i < loadedSpells.length; i++)
+    {
+        if(loadedSpells[i].cost > selfPlayer.mana || FindNextTarget(loadedSpells[i]) == undefined)
+        {
+            FindObject((loadedSpells[i].name.toUpperCase() + "_button")).GreyOut(true);
+        }
     }
 }
 
