@@ -16,7 +16,7 @@ var context;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 const FPS_LIMIT = 30;
-var debugGraphics = false;
+var debugGraphics = true;
 
 
 //  LOADED SPELLS
@@ -206,6 +206,8 @@ class Player
         this.health = 10;
         this.mana = 10;
         this.defence = 0;
+        this.stats.SetClearColour("purple");
+        this.sprite.SetClearColour("blue");
         console.log("Created Player : " + this.name);
     }
 
@@ -308,16 +310,16 @@ function CreateObjects()
     player_2_sprite = new ImageObject("player_2", new Vector2(50, 300), wizard_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650, 50), wizard_img);
     player_4_sprite = new ImageObject("player_4", new Vector2(650, 300), wizard_img);
-    player_1_info = new TextObject("player_1_info", new Vector2(200, 50), 250, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
+    player_1_info = new TextObject("player_1_info", new Vector2(300, 50), 200, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
     player_1_info.SetSplitter('#', "top");
     player_1_info.SetAlign("left");
-    player_2_info = new TextObject("player_2_info", new Vector2(200, 300), 250, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
+    player_2_info = new TextObject("player_2_info", new Vector2(300, 300), 200, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
     player_2_info.SetSplitter('#', "top");
     player_2_info.SetAlign("left");
-    player_3_info = new TextObject("player_3_info", new Vector2(600, 50), 250, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
+    player_3_info = new TextObject("player_3_info", new Vector2(500, 50), 200, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
     player_3_info.SetSplitter('#', "top");
     player_3_info.SetAlign("right");
-    player_4_info = new TextObject("player_4_info", new Vector2(600, 300), 250, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
+    player_4_info = new TextObject("player_4_info", new Vector2(500, 300), 200, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
     player_4_info.SetSplitter('#', "top");
     player_4_info.SetAlign("right");
 
@@ -908,6 +910,8 @@ function EnterGameState(force)
     var isState = true;
     timeSinceState = 0;
 
+    ClearCanvas();
+
     if (changeToState == "CONNECTING_TO_SERVER")
     {
         DisableActiveObjects();
@@ -1061,6 +1065,10 @@ function ClearAll()
         all_Objects[i].clear = true;
     }
 }
+function ClearCanvas()
+{
+    context.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+}
 
 function EnableAttackOptionObjects(enable)
 {
@@ -1202,6 +1210,7 @@ class Object
         this.parent = parent;
         this.renderable = false;
         this.Enable(false);
+        this.clearColour = "green";
         all_Objects.push(this);
     }
 
@@ -1240,6 +1249,11 @@ class Object
         this.pos.y = y;
         this.clear = true;
         if (this.enabled) this.draw = true;
+    }
+
+    SetClearColour(colour)
+    {
+        this.clearColour = colour;
     }
 }
 
@@ -1455,7 +1469,7 @@ class ButtonObject extends Object
             context.clearRect(this.pos.x - 4, this.pos.y - 4, this.width + 8, this.height + 8);
             if (debugGraphics == true)
             {
-                context.fillStyle = "green";
+                context.fillStyle = this.clearColour;
                 context.fillRect(this.pos.x - 4, this.pos.y - 4, this.width + 8, this.height + 8);
                 info += "</br>" + this.name;
             }
@@ -1564,6 +1578,18 @@ class TextObject extends Object
     SetAlign(align)
     {
         this.textAlign = align;
+        if(align == "left")
+        {
+            this.xOffset = -(this.width / 2.0);
+        }
+        else if(align == "right")
+        {
+            this.xOffset = (this.width / 2.0);
+        }
+        else if(align == "center")
+        {
+            this.xOffset = 0;
+        }
     }
 
     Update()
@@ -1579,6 +1605,12 @@ class TextObject extends Object
         if (this.clear)
         {
             context.clearRect(this.pos.x - (this.width / 2), this.pos.y - (this.height / 2), this.width, this.height);
+            if (debugGraphics == true)
+            {
+                context.fillStyle = this.clearColour;
+                context.fillRect(this.pos.x - (this.width / 2), this.pos.y - (this.height / 2), this.width, this.height);
+                info += "</br>" + this.name;
+            }
             this.clear = false;
         }
         if (this.draw)
@@ -1596,12 +1628,12 @@ class TextObject extends Object
                         if (this.lineAnchor == "center") anchor = (l - lineCount / 2.0);
                         if (this.lineAnchor == "top") anchor = (l);
                         var line = textArray[l].toString();
-                        renderer.SubmitText(new RendererText(line, this.pos.x, this.pos.y + ((1.5 * this.fontSize) * anchor), this.textAlign, this.colour, this.fontSize));
+                        renderer.SubmitText(new RendererText(line, this.pos.x + this.xOffset, this.pos.y + ((1.5 * this.fontSize) * anchor), this.textAlign, this.colour, this.fontSize));
                     }
                 }
                 else
                 {
-                    renderer.SubmitText(new RendererText(this.text, this.pos.x, this.pos.y, this.textAlign, this.colour, this.fontSize));
+                    renderer.SubmitText(new RendererText(this.text, this.pos.x + this.xOffset, this.pos.y, this.textAlign, this.colour, this.fontSize));
                 }
             }
 
@@ -1612,6 +1644,11 @@ class TextObject extends Object
 
 function LoadSpells()
 {
+    attackSpells = new Array();
+    defendSpells = new Array();
+    specialSpells = new Array();
+    evadeSpells = new Array();
+
     for (var i = 0; i < loadedSpells.length; i++)
     {
         var newSpell = loadedSpells[i];
