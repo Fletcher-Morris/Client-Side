@@ -1246,6 +1246,7 @@ class ButtonObject extends Object
 
     Press()
     {
+        if(this.grey) return;
         buttonPressedThisFrame = true;
         CallButtonFunction(this.functionString);
     }
