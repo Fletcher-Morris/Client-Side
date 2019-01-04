@@ -94,11 +94,12 @@ window.addEventListener("load", function()
     rendererButtons = new Array();
     rendererImages = new Array();
     rendererTexts = new Array();
+
+
     keyDownArray = Array(30).fill(false);
     keyHeldArray = Array(30).fill(false);
     keyPrevArray = Array(30).fill(false);
 
-    //LoadSpells();
     CreateObjects();
     {
         setInterval(Update, 1000/FPS_LIMIT);
@@ -1376,8 +1377,6 @@ class TextObject extends Object
 
 function LoadSpells()
 {
-    //loadedSpells = JSON.parse(JSON.stringify(spellJson));
-
     for (var i = 0; i < loadedSpells.length; i++) {
 
         var newSpell = loadedSpells[i];
@@ -1505,7 +1504,6 @@ class Renderer
 
     Proccess()
     {
-        //context.clearRect(0, 0, 800, 600);
         for (var i = 0; i < rendererTexts.length; i++)
         {
             rendererTexts[i].Render();

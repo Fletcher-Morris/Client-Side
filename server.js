@@ -538,7 +538,7 @@ function ProccessRound()
 					if(differenceValue >= 1)
 					{
 						//	Reflect
-						if(serverSettings.limitReflectedDamage != false && differenceValue >= (spell.effect * caster.multiplier)) differenceValue = (spell.effect * caster.multiplier);
+						if(differenceValue >= (spell.effect * caster.multiplier)) differenceValue = (spell.effect * caster.multiplier);
 						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + differenceValue + " back towards them!");
 						caster.Damage(differenceValue);
 					}
@@ -582,8 +582,8 @@ function ProccessRound()
 	for(var i = 1; i < ConnectedPlayers().length + 1; i++)
 	{
 		var p = GetPlayerById(i);
-		if(serverSettings.resetDefence != false) p.defence = 0;
-		if(serverSettings.resetBoost != false) p.multiplier = 1.0;
+		p.defence = 0;
+		p.multiplier = 1.0;
 		p.action = undefined;
 		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + ", Defence: " + p.defence + " }");
 	}
