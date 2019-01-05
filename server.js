@@ -30,7 +30,10 @@ var queuedPlayers;
 io.on('connection', function(socket) {
 	SendSpellsToSocket(socket);
 
-	console.log(io.sockets.sockets.length);
+	socket.on('disconnect', function()
+	{
+		HandleDisconnect(socket);
+	});
 
 	socket.on('spells confirmed', function(success)
 	{
@@ -83,7 +86,7 @@ function ConfirmWizard(socket, name)
 {
 	if(CheckBannedNames(name) == false)
 	{
-		var p = new Player(socket, 0, name)
+		var p = new Player(socket.id, 0, name)
 		queuedPlayers.push(p);
 		console.log("\n" + p.name + " joined the queue");
 		TryStartGame();
@@ -128,22 +131,22 @@ function CreatePlayer(player)
 	if(player1 === undefined)
 	{
 		connectedAsPlayer = 1;
-		player1 = new Player(player.socket, connectedAsPlayer, player.name);
+		player1 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 	else if(player2 === undefined)
 	{
 		connectedAsPlayer = 2;
-		player2 = new Player(player.socket, connectedAsPlayer, player.name);
+		player2 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 	else if(player3 === undefined)
 	{
 		connectedAsPlayer = 3;
-		player3 = new Player(player.socket, connectedAsPlayer, player.name);
+		player3 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 	else if(player4 === undefined)
 	{
 		connectedAsPlayer = 4;
-		player4 = new Player(player.socket, connectedAsPlayer, player.name);
+		player4 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 
 	if(connectedAsPlayer != 0)
@@ -159,19 +162,19 @@ function RefuseConnection(socket, reason)
 
 function GetPlayerBySocket(socket)
 {
-	if(player1.socket === socket)
+	if(player1.socketId == socket.id)
 	{
 		return player1;
 	}
-	else if(player2.socket === socket)
+	else if(player2.socketId == socket.id)
 	{
 		return player2;
 	}
-	else if(player3.socket === socket)
+	else if(player3.socketId == socket.id)
 	{
 		return player3;
 	}
-	else if(player4.socket === socket)
+	else if(player4.socketId == socket.id)
 	{
 		return player4;
 	}
@@ -223,16 +226,21 @@ function CheckBannedNames(name)
 	return false;
 }
 
+function GetSocketById(id)
+{
+	return io.sockets.connected[id];
+}
+
 
 //	GAME STUFF
 class Player
 {
-	constructor(socket, id, name)
+	constructor(socketId, id, name)
 	{
 		this.name = name;
 		this.health = serverSettings.playerHealth;
 		this.mana = serverSettings.playerMana;
-		this.socket = socket;
+		this.socketId = socketId;
 		this.id = id;
 		this.timeout = 5;
 		this.dead = false;
@@ -251,10 +259,12 @@ class Player
 			this.team = "B";
 		}
 
-		this.socket.on('disconnect', function()
-		{
-			HandleDisconnect(this);
-		});
+		
+	}
+
+	GetSocket()
+	{
+		return GetSocketById(this.socketId);
 	}
 
 	EnterGame()
@@ -264,7 +274,7 @@ class Player
 
 	Send(command, message)
 	{
-		this.socket.emit(command, message);
+		this.GetSocket().emit(command, message);
 	}
 
 	SendInitialPlayerData()
@@ -602,8 +612,12 @@ function ProccessRound()
 	console.log("\n");
 }
 
-function HandleDisconnect(player)
+function HandleDisconnect(socket)
 {
+	var player = GetPlayerBySocket(socket);
+
+	console.log("Player with id '" + player.socketId + "' dissconected");
+
 	if(player.connected == false)
 	{
 		console.log(player.name + " is allready disconnected");
@@ -615,7 +629,7 @@ function HandleDisconnect(player)
 			//	Handle a player in the current game
 			console.log(player.name + " has left the game");
 		}
-		else
+		else if (player.inGame == false)
 		{
 			//	Handle a queueing player
 			console.log(player.name + " has left the queue");
