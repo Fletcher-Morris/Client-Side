@@ -304,20 +304,20 @@ function CreateObjects()
     epic_sprite.SetAnimationFrames(epic_sprite_frames, 2);
     vs_text = new TextObject("vs_text", new Vector2(400, 300), 80, 40, "VS", 40, "white");
 
-    spellDescription = new TextObject("spell_description", new Vector2(400, 300), 300, 300, "SPELL DESCRIPTION", 15, "white");
+    spellDescription = new TextObject("spell_description", new Vector2(400, 250), 400, 180, "SPELL DESCRIPTION", 15, "white");
     spellDescription.SetSplitter('#', "top");
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50, 50), wizard_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50, 300), wizard_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650, 50), wizard_img);
     player_4_sprite = new ImageObject("player_4", new Vector2(650, 300), wizard_img);
-    player_1_info = new TextObject("player_1_info", new Vector2(240, 150), 150, 90, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
+    player_1_info = new TextObject("player_1_info", new Vector2(240, 100), 150, 90, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
     player_1_info.SetSplitter('#', "top");
     player_1_info.SetAlign("left");
     player_2_info = new TextObject("player_2_info", new Vector2(240, 400), 150, 90, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
     player_2_info.SetSplitter('#', "top");
     player_2_info.SetAlign("left");
-    player_3_info = new TextObject("player_3_info", new Vector2(560, 150), 150, 90, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
+    player_3_info = new TextObject("player_3_info", new Vector2(560, 100), 150, 90, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
     player_3_info.SetSplitter('#', "top");
     player_3_info.SetAlign("right");
     player_4_info = new TextObject("player_4_info", new Vector2(560, 400), 150, 90, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
