@@ -30,6 +30,8 @@ var queuedPlayers;
 io.on('connection', function(socket) {
 	SendSpellsToSocket(socket);
 
+	console.log(io.sockets.sockets.length);
+
 	socket.on('spells confirmed', function(success)
 	{
 		if(success == false) SendSpellsToSocket(socket);
@@ -81,8 +83,9 @@ function ConfirmWizard(socket, name)
 {
 	if(CheckBannedNames(name) == false)
 	{
-		queuedPlayers.push(new Player(socket, 0, name));
-		console.log("\n" + name + " joined the queue");
+		var p = new Player(socket, 0, name)
+		queuedPlayers.push(p);
+		console.log("\n" + p.name + " joined the queue");
 		TryStartGame();
 	}
 	else
@@ -234,6 +237,7 @@ class Player
 		this.timeout = 5;
 		this.dead = false;
 		this.inGame = false;
+		this.connected = true;
 		this.defence = 0;
 		this.evadedNothing = true;
 		this.multiplier = 1.0;
@@ -246,14 +250,16 @@ class Player
 		{
 			this.team = "B";
 		}
+
+		this.socket.on('disconnect', function()
+		{
+			HandleDisconnect(this);
+		});
 	}
 
 	EnterGame()
 	{
-		this.socket.on('disconnect', function()
-		{
-			console.log(this.id.toString() + " DISCONNECTED!");
-		});
+		this.inGame = true;
 	}
 
 	Send(command, message)
@@ -594,6 +600,38 @@ function ProccessRound()
 	gameRound ++;
 	SendToPlayers('next round');
 	console.log("\n");
+}
+
+function HandleDisconnect(player)
+{
+	if(player.connected == false)
+	{
+		console.log(player.name + " is allready disconnected");
+	}
+	else
+	{
+		if(player.inGame == true)
+		{
+			//	Handle a player in the current game
+			console.log(player.name + " has left the game");
+		}
+		else
+		{
+			//	Handle a queueing player
+			console.log(player.name + " has left the queue");
+		}
+
+		if(gameInProgress == true)
+		{
+
+		}
+		else
+		{
+
+		}
+	}
+
+	player.connected = false;
 }
 
 function SendRoundResultsToClients(results)

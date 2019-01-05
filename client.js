@@ -597,7 +597,7 @@ function Update()
 
     buttonPressedThisFrame = false;
 
-    if(GetKeyDown("u")) debugGraphics = !debugGraphics;
+    //if(GetKeyDown("u")) debugGraphics = !debugGraphics;
 
     if (gameState == "START")
     {
@@ -693,6 +693,7 @@ function Update()
         if(timeSinceState >= 6.0)
         {
             epic_sprite.Enable(false);
+            vs_text.Enable(false);
             SetGameState("CHOOSING_ATTACK");
         }
         if(timeSinceState >= 4.0)
