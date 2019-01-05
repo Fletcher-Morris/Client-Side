@@ -16,7 +16,7 @@ var context;
 const CANVAS_WIDTH = 800;
 const CANVAS_HEIGHT = 600;
 const FPS_LIMIT = 30;
-var debugGraphics = true;
+var debugGraphics = false;
 
 
 //  LOADED SPELLS
@@ -303,23 +303,23 @@ function CreateObjects()
     epic_sprite.SetAnimationFrames(epic_sprite_frames, 2);
     vs_text = new TextObject("vs_text", new Vector2(400, 300), 80, 40, "VS", 40, "white");
 
-    spellDescription = new TextObject("spell_description", new Vector2(400, 100), 500, 300, "SPELL DESCRIPTION", 15, "white");
+    spellDescription = new TextObject("spell_description", new Vector2(400, 300), 300, 300, "SPELL DESCRIPTION", 15, "white");
     spellDescription.SetSplitter('#', "top");
 
     player_1_sprite = new ImageObject("player_1", new Vector2(50, 50), wizard_img);
     player_2_sprite = new ImageObject("player_2", new Vector2(50, 300), wizard_img);
     player_3_sprite = new ImageObject("player_3", new Vector2(650, 50), wizard_img);
     player_4_sprite = new ImageObject("player_4", new Vector2(650, 300), wizard_img);
-    player_1_info = new TextObject("player_1_info", new Vector2(300, 50), 200, 100, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
+    player_1_info = new TextObject("player_1_info", new Vector2(240, 150), 150, 90, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
     player_1_info.SetSplitter('#', "top");
     player_1_info.SetAlign("left");
-    player_2_info = new TextObject("player_2_info", new Vector2(300, 300), 200, 100, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
+    player_2_info = new TextObject("player_2_info", new Vector2(240, 400), 150, 90, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
     player_2_info.SetSplitter('#', "top");
     player_2_info.SetAlign("left");
-    player_3_info = new TextObject("player_3_info", new Vector2(500, 50), 200, 100, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
+    player_3_info = new TextObject("player_3_info", new Vector2(560, 150), 150, 90, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
     player_3_info.SetSplitter('#', "top");
     player_3_info.SetAlign("right");
-    player_4_info = new TextObject("player_4_info", new Vector2(500, 300), 200, 100, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
+    player_4_info = new TextObject("player_4_info", new Vector2(560, 400), 150, 90, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
     player_4_info.SetSplitter('#', "top");
     player_4_info.SetAlign("right");
 
@@ -596,6 +596,8 @@ function Update()
 
     buttonPressedThisFrame = false;
 
+    if(GetKeyDown("u")) debugGraphics = !debugGraphics;
+
     if (gameState == "START")
     {
         SetGameState("CONNECTING_TO_SERVER");
@@ -731,12 +733,14 @@ function Update()
             b++;
             if (b >= attack_choice_btns.length) b = 0;
             attack_choice_btns[b].Hover(true);
+            UpdatePlayerStatsText();
         }
         else if (GetKeyDown("arrowdown"))
         {
             b--;
             if (b < 0) b = attack_choice_btns.length - 1;
             attack_choice_btns[b].Hover(true);
+            UpdatePlayerStatsText();
         }
         else if (GetKeyDown("arrowright"))
         {
@@ -1539,6 +1543,7 @@ class TextObject extends Object
         this.colour = colour;
         this.clear = true;
         this.draw = true;
+        this.yOffset = 0;
         rendererTexts.push(this);
     }
 
@@ -1568,6 +1573,14 @@ class TextObject extends Object
             this.lineSplitter = splitter;
             this.multiline = true;
             this.lineAnchor = anchor;
+            if(anchor == "top")
+            {
+                this.yOffset = -(this.height / 2.0);
+            }
+            else if(anchor == "center")
+            {
+                this.yOffset = 0;
+            }
         }
         else
         {
@@ -1625,15 +1638,15 @@ class TextObject extends Object
                     var anchor = 0;
                     for (var l = 0; l < lineCount; l++)
                     {
-                        if (this.lineAnchor == "center") anchor = (l - lineCount / 2.0);
-                        if (this.lineAnchor == "top") anchor = (l);
+                        if (this.lineAnchor == "center") anchor = (l + lineCount / 2.0);
+                        if (this.lineAnchor == "top") anchor = (l + 0.5);
                         var line = textArray[l].toString();
-                        renderer.SubmitText(new RendererText(line, this.pos.x + this.xOffset, this.pos.y + ((1.5 * this.fontSize) * anchor), this.textAlign, this.colour, this.fontSize));
+                        renderer.SubmitText(new RendererText(line, this.pos.x + this.xOffset, this.pos.y + ((1.5 * this.fontSize) * anchor) + this.yOffset, this.textAlign, this.colour, this.fontSize));
                     }
                 }
                 else
                 {
-                    renderer.SubmitText(new RendererText(this.text, this.pos.x + this.xOffset, this.pos.y, this.textAlign, this.colour, this.fontSize));
+                    renderer.SubmitText(new RendererText(this.text, this.pos.x + this.xOffset, this.pos.y + this.yOffset, this.textAlign, this.colour, this.fontSize));
                 }
             }
 
