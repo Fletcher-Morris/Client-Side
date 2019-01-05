@@ -260,7 +260,7 @@ class Player
         newText += "#hp : " + this.health;
         newText += "#mn : " + this.mana;
         newText += "#df : " + this.defence;
-        this.stats.SetText(newText);
+        this.stats.SetText(newText, true);
     }
 
     Target()
@@ -291,6 +291,7 @@ function CreateObjects()
     //  NAME SELECTION PAGE OBJECTS
     server_text_message = new TextObject("server_message", new Vector2(400, 280), 800, 50, "CHOOSE A NAME", 25, "white");
     nickname_text = new TextObject("name_text", new Vector2(400, 320), 400, 40, "", 25, "white");
+    nickname_text.SetClearColour("orange");
     submit_name_btn = new ButtonObject(new Vector2(300, 450), 200, 50, "ENTER", 25);
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
@@ -727,20 +728,19 @@ function Update()
         spellText += ("DAMAGE : " + hoveredSpell.effect + "#");
         spellText += (hoveredSpell.desc);
         spellDescription.SetText(spellText);
+        UpdatePlayerStatsText();
 
         if (GetKeyDown("arrowup"))
         {
             b++;
             if (b >= attack_choice_btns.length) b = 0;
             attack_choice_btns[b].Hover(true);
-            UpdatePlayerStatsText();
         }
         else if (GetKeyDown("arrowdown"))
         {
             b--;
             if (b < 0) b = attack_choice_btns.length - 1;
             attack_choice_btns[b].Hover(true);
-            UpdatePlayerStatsText();
         }
         else if (GetKeyDown("arrowright"))
         {
@@ -769,6 +769,7 @@ function Update()
         spellText += ("DEFENCE : +" + hoveredSpell.effect + "#");
         spellText += (hoveredSpell.desc);
         spellDescription.SetText(spellText);
+        UpdatePlayerStatsText();
 
         if (GetKeyDown("arrowup"))
         {
@@ -815,6 +816,7 @@ function Update()
         }
         spellText += (hoveredSpell.desc);
         spellDescription.SetText(spellText);
+        UpdatePlayerStatsText();
 
         if (GetKeyDown("arrowup"))
         {
@@ -848,6 +850,7 @@ function Update()
         spellText += ("CHANCE : " + (1.0 / hoveredSpell.effect) + "#");
         spellText += (hoveredSpell.desc);
         spellDescription.SetText(spellText);
+        UpdatePlayerStatsText();
 
         if (GetKeyDown("arrowright"))
         {
@@ -964,11 +967,7 @@ function EnterGameState(force)
         EnablePlayerStats(true);
         hoveredSpell = undefined;
         chosenSpell = undefined;
-        attack_btn.Enable(true);
-        defend_btn.Enable(true);
-        special_btn.Enable(true);
-        evade_btn.Enable(true);
-        attack_btn.Hover(true);
+        EnableActionButtons(true);
         SetAvailableSpells();
     }
     else if (changeToState == "CHOOSING_ATTACK")
@@ -976,6 +975,7 @@ function EnterGameState(force)
         EnableAttackOptionObjects(true);
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(false);
+        EnableActionButtons(true);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
         hoveredSpell = undefined;
@@ -989,6 +989,7 @@ function EnterGameState(force)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(true);
         EnableSpecialOptionObjects(false);
+        EnableActionButtons(true);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
         hoveredSpell = undefined;
@@ -1001,6 +1002,7 @@ function EnterGameState(force)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(true);
+        EnableActionButtons(true);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
         hoveredSpell = undefined;
@@ -1013,6 +1015,7 @@ function EnterGameState(force)
         EnableAttackOptionObjects(false);
         EnableDefendOptionObjects(false);
         EnableSpecialOptionObjects(false);
+        EnableActionButtons(true);
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
         hoveredSpell = GetSpell("evade");
@@ -1072,6 +1075,14 @@ function ClearAll()
 function ClearCanvas()
 {
     context.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+}
+
+function EnableActionButtons(enable)
+{
+    attack_btn.Enable(enable);
+    defend_btn.Enable(enable);
+    special_btn.Enable(enable);
+    evade_btn.Enable(enable);
 }
 
 function EnableAttackOptionObjects(enable)
@@ -1372,6 +1383,7 @@ class ButtonObject extends Object
         this.grey = false;
         rendererButtons.push(this);
         this.draw = true;
+        this.hoverClear = false;
     }
 
     Enable(enable)
@@ -1427,7 +1439,7 @@ class ButtonObject extends Object
             if (this.enabled)
             {
                 this.draw = true;
-                this.clear = true;
+                this.hoverClear = true;
             }
             else
             {
@@ -1478,6 +1490,17 @@ class ButtonObject extends Object
                 info += "</br>" + this.name;
             }
             this.clear = false;
+        }
+        else if(this.hoverClear == true)
+        {
+            context.clearRect(this.pos.x, this.pos.y, this.width, this.height);
+            if (debugGraphics == true)
+            {
+                context.fillStyle = this.clearColour;
+                context.fillRect(this.pos.x, this.pos.y, this.width, this.height);
+                info += "</br>" + this.name;
+            }
+            this.hoverClear = false;
         }
         if (this.draw == true)
         {
@@ -1556,9 +1579,9 @@ class TextObject extends Object
         }
     }
 
-    SetText(text)
+    SetText(text, force)
     {
-        if (text != this.text)
+        if (text != this.text || force == true)
         {
             this.text = text;
             this.clear = true;
