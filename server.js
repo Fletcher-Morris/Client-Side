@@ -440,10 +440,12 @@ function StartGame()
 	SendToQueue('player count', queuedPlayers.length);
 
 	var nameString = "";
+	nameString += PlayerByPlayerId(1).name + " and ";
+	nameString += PlayerByPlayerId(2).name + " VS ";
+	nameString += PlayerByPlayerId(3).name + " and ";
+	nameString += PlayerByPlayerId(4).name;
 	for(var i = 0; i < 4; i++)
 	{
-		nameString += PlayerByPlayerId(i + 1).name;
-		if(i < 3) nameString += ", ";
 		PlayerByPlayerId(i + 1).EnterGame();
 	}
 
@@ -685,13 +687,13 @@ function SendRoundResultsToClients(results)
 
 function HandlePlayerDeath(player)
 {
-	if(player1.dead == true && player2.dead == true)
+	if(((player1 == undefined)||(player1.dead == true)) && ((player2 == undefined)||(player2.dead == true)))
 	{
 		//	TEAM B WINS
 		winningTeam = "B";
 		EndGame(winningTeam);
 	}
-	else if(player3.dead == true && player4.dead == true)
+	else if(((player3 == undefined)||(player3.dead == true)) && ((player4 == undefined)||(player4.dead == true)))
 	{
 		//	TEAM A WINS
 		winningTeam = "A";

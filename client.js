@@ -94,6 +94,7 @@ var chosenSpell;
 var selfPlayer;
 var targetPlayer;
 var teamPlayers, enemyPlayers;
+var wonLastGame;
 
 
 window.addEventListener("load", function()
@@ -156,6 +157,7 @@ function SetUpNetworking()
     socket.on('queue length', function(count)
     {
         connectedPlayers = count;
+        console.log("Queue length : " + count);
         SetGameState("JOINING_QUEUE", true);
     });
     socket.on('initial stats', function(statsArray)
@@ -193,6 +195,12 @@ function SetUpNetworking()
     socket.on('next round', function(data)
     {
         SetGameState("CHOOSING_ACTION", true);
+    });
+    socket.on('game over', function(winners)
+    {
+        if(selfPlayer.team == winners) wonLastGame = true;
+        else wonLastGame = false;
+        SetGameState("GAME_OVER");
     });
 }
 
@@ -1032,6 +1040,18 @@ function EnterGameState(force)
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
         FindNextTarget(chosenSpell).Target();
+    }
+    else if(changeToState == "GAME_OVER")
+    {
+        server_text_message.Enable(true);
+        if(wonLastGame == true)
+        {
+            server_text_message.SetText("VICTORY");
+        }
+        else
+        {
+            server_text_message.SetText("DEFEAT");
+        }
     }
     else
     {
