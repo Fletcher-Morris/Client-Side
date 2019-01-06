@@ -705,14 +705,14 @@ function HandlePlayerDeath(player)
 
 function EndGame(winners)
 {
-	SendToPlayers('game over', winners);
 	console.log("TEAM " + winners + " WINS!");
-
 	var players = ConnectedPlayers();
 	for(var i = 0; i < players.length; i++)
 	{
-		queuedPlayers.push(players[i]);
+		players[i].inGame = false;
+		//queuedPlayers.push(players[i]);
 	}
+	SendToPlayers('game over', winners);
 
 	ResetGame();
 }

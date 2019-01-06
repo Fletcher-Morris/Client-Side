@@ -115,9 +115,8 @@ window.addEventListener("load", function()
     keyPrevArray = Array(30).fill(false);
 
     CreateObjects();
-    {
-        setInterval(Update, 1000 / FPS_LIMIT);
-    }
+
+    setInterval(Update, 1000 / FPS_LIMIT);
 
 }, false);
 
@@ -645,11 +644,6 @@ function Update()
         if (playerName.length >= 1) submit_name_btn.Enable(true);
         else submit_name_btn.Enable(false);
         submit_name_btn.Hover(true);
-
-        if (timeSinceStart >= connectionTime + 20.0)
-        {
-            //  KICK FOR INACTIVITY
-        }
     }
     else if (gameState == "WAITING_FOR_PLAYERS")
     {
@@ -698,13 +692,13 @@ function Update()
     }
     else if(gameState == "VS_SCREEN")
     {
-        if(timeSinceState >= 6.0)
+        if(timeSinceState >= 4.0)
         {
             epic_sprite.Enable(false);
             vs_text.Enable(false);
             SetGameState("CHOOSING_ATTACK");
         }
-        if(timeSinceState >= 4.0)
+        if(timeSinceState >= 3.0)
         {
             for(var i = 0; i < 2; i ++)
             {
@@ -712,7 +706,7 @@ function Update()
                 enemyPlayers[i].stats.Enable(true);
             }
         }
-        if(timeSinceState >= 2.0)
+        if(timeSinceState >= 1.0)
         {
             vs_text.Enable(true);
         }
@@ -904,6 +898,10 @@ function Update()
         }
 
         RedrawPlayerSprites();
+    }
+    else if(gameState == "GAME_OVER")
+    {
+        if(timeSinceState >= 3.0) SetGameState("CONNECTING_TO_SERVER");
     }
 
     for (var i = 0; i < all_Objects.length; i++)

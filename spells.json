@@ -4,7 +4,7 @@
     "type": "attack",
     "cost": 2,
     "effect": 3,
-    "desc": "Unleash a wall of#flames upom your#enemy, also#good for cooking.",
+    "desc": "Unleash a wall of#flames upon your#enemy, also#good for cooking.",
     "targets": "enemies"
   },
   {
