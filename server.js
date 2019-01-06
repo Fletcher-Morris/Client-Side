@@ -48,7 +48,7 @@ io.on('connection', function(socket) {
 
 	socket.on('action', function(action)
 	{
-		PlayerBySocketId(socket).SetAction(action);
+		PlayerBySocketId(socket.id).SetAction(action);
 	});
 
 });
@@ -72,10 +72,7 @@ function StartServer()
 	console.log('Starting server on port ' + port);
 	LoadSpells();
 	queuedPlayers = new Array();
-	player1 = undefined;
-	player2 = undefined;
-	player3 = undefined;
-	player4 = undefined;
+	ResetGame();
 }
 
 function SendSpellsToSocket(socket)
@@ -164,21 +161,33 @@ function PlayerBySocketId(socketId)
 {
 	if(gameInProgress == true)
 	{
-		if(player1.socketId == socketId)
+		if(player1 != undefined)
 		{
-			return player1;
+			if(player1.socketId == socketId)
+			{
+				return player1;
+			}
 		}
-		else if(player2.socketId == socketId)
+		if(player2 != undefined)
 		{
-			return player2;
+			if(player2.socketId == socketId)
+			{
+				return player2;
+			}
 		}
-		else if(player3.socketId == socketId)
+		if(player3 != undefined)
 		{
-			return player3;
+			if(player3.socketId == socketId)
+			{
+				return player3;
+			}
 		}
-		else if(player4.socketId == socketId)
+		if(player4 != undefined)
 		{
-			return player4;
+			if(player4.socketId == socketId)
+			{
+				return player4;
+			}
 		}
 	}
 
@@ -402,15 +411,15 @@ var player2; // TEAM A
 var player3; // TEAM B
 var player4; // TEAM B
 var gameRound = 1;
-var winningTeam = 0;
+var winningTeam = undefined;
 
 function ConnectedPlayers()
 {
 	var result = [];
-	if(player1 != undefined) result.push(player1);
-	if(player2 != undefined) result.push(player2);
-	if(player3 != undefined) result.push(player3);
-	if(player4 != undefined) result.push(player4);
+	if(player1 != undefined) {if(player1.connected == true) result.push(player1);}
+	if(player2 != undefined) {if(player2.connected == true) result.push(player2);}
+	if(player3 != undefined) {if(player3.connected == true) result.push(player3);}
+	if(player4 != undefined) {if(player4.connected == true) result.push(player4);}
 	return result;
 }
 
@@ -515,7 +524,7 @@ function ProccessRound()
 		caster = executionOrder[i];
 		target = PlayerByPlayerId(caster.action.target);
 		var multiplier = 1.0;
-		if(caster.dead == false && target.dead == false && winningTeam == 0)
+		if(caster.dead == false && target.dead == false && winningTeam == undefined)
 		{
 			spell = caster.action.spell;
 			if(spell.type == "special")
@@ -524,7 +533,7 @@ function ProccessRound()
 				{
 					//	Boost the target
 					target.Boost(1.0);
-					console.log(caster.name + " boosted " + target.name + "'s' spell!");
+					console.log(caster.name + " boosted " + target.name + "'s spell!");
 				}
 				if(spell.name == "heal")
 				{
@@ -678,14 +687,14 @@ function HandlePlayerDeath(player)
 {
 	if(player1.dead == true && player2.dead == true)
 	{
-		//	TEAM 2 WINS
-		winningTeam = 2;
+		//	TEAM B WINS
+		winningTeam = "B";
 		EndGame(winningTeam);
 	}
 	else if(player3.dead == true && player4.dead == true)
 	{
-		//	TEAM 1 WINS
-		winningTeam = 1;
+		//	TEAM A WINS
+		winningTeam = "A";
 		EndGame(winningTeam);
 	}
 }
@@ -693,13 +702,25 @@ function HandlePlayerDeath(player)
 function EndGame(winners)
 {
 	SendToPlayers('game over', winners);
-	winningTeam = 0;
+	console.log("TEAM " + winners + " WINS!");
 
-	connectedPlayers = new Array();
+	var players = ConnectedPlayers();
+	for(var i = 0; i < players.length; i++)
+	{
+		queuedPlayers.push(players[i]);
+	}
+
+	ResetGame();
+}
+function ResetGame()
+{
+	winningTeam = undefined;connectedPlayers = new Array();
 	player1 = undefined;
 	player2 = undefined;
 	player3 = undefined;
 	player4 = undefined;
+	gameInProgress = false;
+	TryStartGame();
 }
 
 function LoadSpells()
