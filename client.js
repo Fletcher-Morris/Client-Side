@@ -40,6 +40,16 @@ var epic_1_img = new Image();
 epic_1_img.src = 'images/epic_1.png';
 var epic_2_img = new Image();
 epic_2_img.src = 'images/epic_2.png';
+var aim_0_img = new Image();
+aim_0_img.src = 'images/wizz_aim_0.png';
+var aim_1_img = new Image();
+aim_0_img.src = 'images/wizz_aim_1.png';
+var aim_2_img = new Image();
+aim_0_img.src = 'images/wizz_aim_2.png';
+var aim_3_img = new Image();
+aim_0_img.src = 'images/wizz_aim_3.png';
+var aim_4_img = new Image();
+aim_0_img.src = 'images/wizz_aim_4.png';
 
 
 //  OBJECTS
@@ -63,6 +73,7 @@ var player_2_sprite;
 var player_3_sprite;
 var player_4_sprite;
 var spellDescription;
+var wizzAmimTest;
 
 //  RENDERER STUFF
 var renderer;
@@ -311,12 +322,9 @@ function CreateObjects()
     submit_name_btn.SetFunction("SUBMITNAME");
     submit_name_btn.name = "submit_name_btn";
 
-    epic_sprite = new ImageObject("epic_sprite", new Vector2(350, 0), epic_0_img);
-    epic_sprite_frames = new Array();
-    epic_sprite_frames.push(epic_0_img);
-    epic_sprite_frames.push(epic_1_img);
-    epic_sprite_frames.push(epic_2_img);
-    epic_sprite.SetAnimationFrames(epic_sprite_frames, 2);
+    epic_sprite = new ImageObject("epic_sprite", new Vector2(350, 0), epic_0_img, 2);
+    epic_sprite.AddAnimationFrame(epic_1_img);
+    epic_sprite.AddAnimationFrame(epic_2_img);
     vs_text = new TextObject("vs_text", new Vector2(400, 300), 80, 40, "VS", 40, "white");
 
     spellDescription = new TextObject("spell_description", new Vector2(400, 250), 400, 180, "SPELL DESCRIPTION", 15, "white");
@@ -347,6 +355,12 @@ function CreateObjects()
     special_btn.SetFunction("CHOOSING_SPECIAL");
     evade_btn = new ButtonObject(new Vector2(600, CANVAS_HEIGHT - 50), 200, 50, "EVADE", 25);
     evade_btn.SetFunction("ACTION_evade");
+
+    wizzAmimTest = new ImageObject("wizzTestSprite", new Vector2(350, 0), aim_0_img, 2);
+    wizzAmimTest.AddAnimationFrame(aim_1_img);
+    wizzAmimTest.AddAnimationFrame(aim_2_img);
+    wizzAmimTest.AddAnimationFrame(aim_3_img);
+    wizzAmimTest.AddAnimationFrame(aim_4_img);
 
     hoveredButton = attack_btn;
 }
@@ -1302,13 +1316,18 @@ class Object
 
 class ImageObject extends Object
 {
-    constructor(name, pos, image)
+    constructor(name, pos, image, interval)
     {
         super(name, pos);
         rendererImages.push(this);
         this.image = image;
         this.draw = true;
         this.animated = false;
+        if(interval != undefined)
+        {
+            this.AddAnimationFrame(image);
+            this.SetAnimationSpeed(interval);
+        }
     }
     SetScale(width, height)
     {
@@ -1347,6 +1366,12 @@ class ImageObject extends Object
         this.animFrameCounter = 0;
         this.currentFrame = 0;
         this.SetImage(this.animFrames[0]);
+    }
+    AddAnimationFrame(frame)
+    {
+        if(this.animFrames == undefined) this.animFrames = new Array();
+        this.animated = true;
+        this.animFrames.push(frame);
     }
 
     Update()
