@@ -126,9 +126,11 @@ function SetUpNetworking()
     {
         connectionSettings = JSON.parse(JSON.stringify(connectionSettings));
         console.log("Loaded connection settings : " + connectionSettings.address + ", " + connectionSettings.port);
+        serverAddress = connectionSettings.address;
+        serverPort = connectionSettings.port;
     }
-
-    socket = io("http://" + connectionSettings.address + ":" + connectionSettings.port);
+    console.log("Connecting to server : " + ("http://" + serverAddress + ":" + serverPort));
+    socket = io("http://" + serverAddress + ":" + serverPort);
     socket.on('marco', function()
     {
         socket.emit('polo', function(data) {});
