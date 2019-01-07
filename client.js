@@ -94,6 +94,7 @@ var chosenSpell;
 var selfPlayer;
 var targetPlayer;
 var teamPlayers, enemyPlayers;
+var wonLastGame;
 
 
 window.addEventListener("load", function()
@@ -114,15 +115,22 @@ window.addEventListener("load", function()
     keyPrevArray = Array(30).fill(false);
 
     CreateObjects();
-    {
-        setInterval(Update, 1000 / FPS_LIMIT);
-    }
+
+    setInterval(Update, 1000 / FPS_LIMIT);
 
 }, false);
 
 function SetUpNetworking()
 {
-    socket = io(serverAddress + ":" + serverPort);
+    if (connectionSettings != undefined)
+    {
+        connectionSettings = JSON.parse(JSON.stringify(connectionSettings));
+        console.log("Loaded connection settings : " + connectionSettings.address + ", " + connectionSettings.port);
+        serverAddress = connectionSettings.address;
+        serverPort = connectionSettings.port;
+    }
+    console.log("Connecting to server : " + ("http://" + serverAddress + ":" + serverPort));
+    socket = io("http://" + serverAddress + ":" + serverPort);
     socket.on('marco', function()
     {
         socket.emit('polo', function(data) {});
@@ -156,6 +164,7 @@ function SetUpNetworking()
     socket.on('queue length', function(count)
     {
         connectedPlayers = count;
+        console.log("Queue length : " + count);
         SetGameState("JOINING_QUEUE", true);
     });
     socket.on('initial stats', function(statsArray)
@@ -193,6 +202,12 @@ function SetUpNetworking()
     socket.on('next round', function(data)
     {
         SetGameState("CHOOSING_ACTION", true);
+    });
+    socket.on('game over', function(winners)
+    {
+        if (selfPlayer.team == winners) wonLastGame = true;
+        else wonLastGame = false;
+        SetGameState("GAME_OVER");
     });
 }
 
@@ -597,7 +612,7 @@ function Update()
 
     buttonPressedThisFrame = false;
 
-    if(GetKeyDown("u")) debugGraphics = !debugGraphics;
+    //if(GetKeyDown("u")) debugGraphics = !debugGraphics;
 
     if (gameState == "START")
     {
@@ -637,11 +652,6 @@ function Update()
         if (playerName.length >= 1) submit_name_btn.Enable(true);
         else submit_name_btn.Enable(false);
         submit_name_btn.Hover(true);
-
-        if (timeSinceStart >= connectionTime + 20.0)
-        {
-            //  KICK FOR INACTIVITY
-        }
     }
     else if (gameState == "WAITING_FOR_PLAYERS")
     {
@@ -688,26 +698,27 @@ function Update()
 
         RedrawPlayerSprites();
     }
-    else if(gameState == "VS_SCREEN")
+    else if (gameState == "VS_SCREEN")
     {
-        if(timeSinceState >= 6.0)
+        if (timeSinceState >= 4.0)
         {
             epic_sprite.Enable(false);
-            SetGameState("CHOOSING_ATTACK");
+            vs_text.Enable(false);
+            SetGameState("CHOOSING_ACTION");
         }
-        if(timeSinceState >= 4.0)
+        if (timeSinceState >= 3.0)
         {
-            for(var i = 0; i < 2; i ++)
+            for (var i = 0; i < 2; i++)
             {
                 enemyPlayers[i].sprite.Enable(true);
                 enemyPlayers[i].stats.Enable(true);
             }
         }
-        if(timeSinceState >= 2.0)
+        if (timeSinceState >= 1.0)
         {
             vs_text.Enable(true);
         }
-        for(var i = 0; i < 2; i ++)
+        for (var i = 0; i < 2; i++)
         {
             teamPlayers[i].sprite.Enable(true);
             teamPlayers[i].stats.Enable(true);
@@ -896,6 +907,10 @@ function Update()
 
         RedrawPlayerSprites();
     }
+    else if (gameState == "GAME_OVER")
+    {
+        if (timeSinceState >= 3.0) SetGameState("CONNECTING_TO_SERVER");
+    }
 
     for (var i = 0; i < all_Objects.length; i++)
     {
@@ -1032,6 +1047,18 @@ function EnterGameState(force)
         EnablePlayerStats(true);
         FindNextTarget(chosenSpell).Target();
     }
+    else if (changeToState == "GAME_OVER")
+    {
+        server_text_message.Enable(true);
+        if (wonLastGame == true)
+        {
+            server_text_message.SetText("VICTORY");
+        }
+        else
+        {
+            server_text_message.SetText("DEFEAT");
+        }
+    }
     else
     {
         isState = false;
@@ -1072,9 +1099,10 @@ function ClearAll()
         all_Objects[i].clear = true;
     }
 }
+
 function ClearCanvas()
 {
-    context.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+    context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 
 function EnableActionButtons(enable)
@@ -1491,7 +1519,7 @@ class ButtonObject extends Object
             }
             this.clear = false;
         }
-        else if(this.hoverClear == true)
+        else if (this.hoverClear == true)
         {
             context.clearRect(this.pos.x, this.pos.y, this.width, this.height);
             if (debugGraphics == true)
@@ -1596,11 +1624,11 @@ class TextObject extends Object
             this.lineSplitter = splitter;
             this.multiline = true;
             this.lineAnchor = anchor;
-            if(anchor == "top")
+            if (anchor == "top")
             {
                 this.yOffset = -(this.height / 2.0);
             }
-            else if(anchor == "center")
+            else if (anchor == "center")
             {
                 this.yOffset = 0;
             }
@@ -1614,15 +1642,15 @@ class TextObject extends Object
     SetAlign(align)
     {
         this.textAlign = align;
-        if(align == "left")
+        if (align == "left")
         {
             this.xOffset = -(this.width / 2.0);
         }
-        else if(align == "right")
+        else if (align == "right")
         {
             this.xOffset = (this.width / 2.0);
         }
-        else if(align == "center")
+        else if (align == "center")
         {
             this.xOffset = 0;
         }
@@ -1688,7 +1716,7 @@ function LoadSpells()
     for (var i = 0; i < loadedSpells.length; i++)
     {
         var newSpell = loadedSpells[i];
-        if(GetSpell(newSpell.name) == undefined)
+        if (GetSpell(newSpell.name) == undefined)
         {
             if (newSpell.type == "attack")
             {

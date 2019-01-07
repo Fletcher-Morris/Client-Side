@@ -1,4 +1,6 @@
-// Dependencies
+//  WIZARD WARS, CREATED BY FLETCHER MORRIS
+
+//	Dependencies
 var express = require('express');
 var http = require('http');
 var path = require('path');
@@ -30,6 +32,11 @@ var queuedPlayers;
 io.on('connection', function(socket) {
 	SendSpellsToSocket(socket);
 
+	socket.on('disconnect', function()
+	{
+		HandleDisconnect(socket);
+	});
+
 	socket.on('spells confirmed', function(success)
 	{
 		if(success == false) SendSpellsToSocket(socket);
@@ -43,7 +50,7 @@ io.on('connection', function(socket) {
 
 	socket.on('action', function(action)
 	{
-		GetPlayerBySocket(socket).SetAction(action);
+		PlayerBySocketId(socket.id).SetAction(action);
 	});
 
 });
@@ -67,10 +74,7 @@ function StartServer()
 	console.log('Starting server on port ' + port);
 	LoadSpells();
 	queuedPlayers = new Array();
-	player1 = undefined;
-	player2 = undefined;
-	player3 = undefined;
-	player4 = undefined;
+	ResetGame();
 }
 
 function SendSpellsToSocket(socket)
@@ -81,8 +85,9 @@ function ConfirmWizard(socket, name)
 {
 	if(CheckBannedNames(name) == false)
 	{
-		queuedPlayers.push(new Player(socket, 0, name));
-		console.log("\n" + name + " joined the queue");
+		var p = new Player(socket.id, 0, name)
+		queuedPlayers.push(p);
+		console.log("\n" + p.name + " joined the queue");
 		TryStartGame();
 	}
 	else
@@ -125,22 +130,22 @@ function CreatePlayer(player)
 	if(player1 === undefined)
 	{
 		connectedAsPlayer = 1;
-		player1 = new Player(player.socket, connectedAsPlayer, player.name);
+		player1 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 	else if(player2 === undefined)
 	{
 		connectedAsPlayer = 2;
-		player2 = new Player(player.socket, connectedAsPlayer, player.name);
+		player2 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 	else if(player3 === undefined)
 	{
 		connectedAsPlayer = 3;
-		player3 = new Player(player.socket, connectedAsPlayer, player.name);
+		player3 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 	else if(player4 === undefined)
 	{
 		connectedAsPlayer = 4;
-		player4 = new Player(player.socket, connectedAsPlayer, player.name);
+		player4 = new Player(player.socketId, connectedAsPlayer, player.name);
 	}
 
 	if(connectedAsPlayer != 0)
@@ -154,26 +159,46 @@ function RefuseConnection(socket, reason)
 	console.log("\nRefused connection to player, reason : " + reason + ".");
 }
 
-function GetPlayerBySocket(socket)
+function PlayerBySocketId(socketId)
 {
-	if(player1.socket === socket)
+	if(gameInProgress == true)
 	{
-		return player1;
+		if(player1 != undefined)
+		{
+			if(player1.socketId == socketId)
+			{
+				return player1;
+			}
+		}
+		if(player2 != undefined)
+		{
+			if(player2.socketId == socketId)
+			{
+				return player2;
+			}
+		}
+		if(player3 != undefined)
+		{
+			if(player3.socketId == socketId)
+			{
+				return player3;
+			}
+		}
+		if(player4 != undefined)
+		{
+			if(player4.socketId == socketId)
+			{
+				return player4;
+			}
+		}
 	}
-	else if(player2.socket === socket)
+
+	for(var i = 0; i < queuedPlayers.length; i++)
 	{
-		return player2;
-	}
-	else if(player3.socket === socket)
-	{
-		return player3;
-	}
-	else if(player4.socket === socket)
-	{
-		return player4;
+		if(queuedPlayers[i].socketId == socketId) return queuedPlayers[i];
 	}
 }
-function GetPlayerById(id)
+function PlayerByPlayerId(id)
 {
 	if(id == 1)
 	{
@@ -191,7 +216,19 @@ function GetPlayerById(id)
 	{
 		return player4;
 	}
+	else
+	{
+		console.log("Can not find player with id '" + id + "'");
+	}
 }
+function RemovePlayerFromQueue(player)
+{
+	for(var i = 0; i < queuedPlayers.length; i++)
+	{
+		if(queuedPlayers[i] == player) queuedPlayers.splice(i,1);
+	}
+}
+
 function SendToQueue(command, message)
 {
 	if(queuedPlayers.length >= 1)
@@ -207,7 +244,7 @@ function SendToPlayers(command, message)
 	var players = ConnectedPlayers();
 	for(var i = 0; i < players.length; i++)
 	{
-		GetPlayerById(i + 1).Send(command, message);
+		PlayerByPlayerId(i + 1).Send(command, message);
 	}
 }
 
@@ -220,20 +257,26 @@ function CheckBannedNames(name)
 	return false;
 }
 
+function GetSocketById(id)
+{
+	return io.sockets.connected[id];
+}
+
 
 //	GAME STUFF
 class Player
 {
-	constructor(socket, id, name)
+	constructor(socketId, id, name)
 	{
 		this.name = name;
 		this.health = serverSettings.playerHealth;
 		this.mana = serverSettings.playerMana;
-		this.socket = socket;
+		this.socketId = socketId;
 		this.id = id;
 		this.timeout = 5;
 		this.dead = false;
 		this.inGame = false;
+		this.connected = true;
 		this.defence = 0;
 		this.evadedNothing = true;
 		this.multiplier = 1.0;
@@ -246,19 +289,24 @@ class Player
 		{
 			this.team = "B";
 		}
+
+		
+	}
+
+	GetSocket()
+	{
+		return GetSocketById(this.socketId);
 	}
 
 	EnterGame()
 	{
-		this.socket.on('disconnect', function()
-		{
-			console.log(this.id.toString() + " DISCONNECTED!");
-		});
+		this.inGame = true;
 	}
 
 	Send(command, message)
 	{
-		this.socket.emit(command, message);
+		if(this.connected == false) return;
+		this.GetSocket().emit(command, message);
 	}
 
 	SendInitialPlayerData()
@@ -294,7 +342,7 @@ class Player
 	{
 		this.action = act;
 		this.action.spell = GetSpell(act.spell);		
-		console.log(this.name + " targeted " + GetPlayerById(this.action.target).name + " with the '" + act.spell.name + "' spell");
+		console.log(this.name + " targeted " + PlayerByPlayerId(this.action.target).name + " with the '" + act.spell.name + "' spell");
 		ProccessRound();
 	}
 
@@ -365,15 +413,15 @@ var player2; // TEAM A
 var player3; // TEAM B
 var player4; // TEAM B
 var gameRound = 1;
-var winningTeam = 0;
+var winningTeam = undefined;
 
 function ConnectedPlayers()
 {
 	var result = [];
-	if(player1 != undefined) result.push(player1);
-	if(player2 != undefined) result.push(player2);
-	if(player3 != undefined) result.push(player3);
-	if(player4 != undefined) result.push(player4);
+	if(player1 != undefined) {if(player1.connected == true) result.push(player1);}
+	if(player2 != undefined) {if(player2.connected == true) result.push(player2);}
+	if(player3 != undefined) {if(player3.connected == true) result.push(player3);}
+	if(player4 != undefined) {if(player4.connected == true) result.push(player4);}
 	return result;
 }
 
@@ -394,11 +442,13 @@ function StartGame()
 	SendToQueue('player count', queuedPlayers.length);
 
 	var nameString = "";
+	nameString += PlayerByPlayerId(1).name + " and ";
+	nameString += PlayerByPlayerId(2).name + " VS ";
+	nameString += PlayerByPlayerId(3).name + " and ";
+	nameString += PlayerByPlayerId(4).name;
 	for(var i = 0; i < 4; i++)
 	{
-		nameString += GetPlayerById(i + 1).name;
-		if(i < 3) nameString += ", ";
-		GetPlayerById(i + 1).EnterGame();
+		PlayerByPlayerId(i + 1).EnterGame();
 	}
 
 	console.log("\nGAME STARTED! { " + nameString + " }");
@@ -412,7 +462,7 @@ function ProccessRound()
 	//	CKECK ALL PLAYERS HAVE AN ACTION
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
-		if(GetPlayerById(i + 1).action == undefined) return;
+		if(PlayerByPlayerId(i + 1).action == undefined) return;
 	}
 
 	var executionOrder = new Array();
@@ -425,7 +475,7 @@ function ProccessRound()
 	//	Check for boost spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
-		caster = GetPlayerById(i + 1);
+		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
 		if(spell.name == "boost")
 		{
@@ -435,7 +485,7 @@ function ProccessRound()
 	//	Check for heal spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
-		caster = GetPlayerById(i + 1);
+		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
 		if(spell.name == "heal")
 		{
@@ -445,7 +495,7 @@ function ProccessRound()
 	//	Check for defence spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
-		caster = GetPlayerById(i + 1);
+		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
 		if(spell.type == "defend")
 		{
@@ -454,7 +504,7 @@ function ProccessRound()
 	}
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
-		caster = GetPlayerById(i + 1);
+		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
 		if(spell.type == "attack")
 		{
@@ -463,7 +513,7 @@ function ProccessRound()
 	}
 	for(var i = 0; i < ConnectedPlayers().length; i++)
 	{
-		caster = GetPlayerById(i + 1);
+		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
 		if(spell.type == "evade")
 		{
@@ -476,9 +526,9 @@ function ProccessRound()
 	for(var i = 0; i < executionOrder.length; i++)
 	{
 		caster = executionOrder[i];
-		target = GetPlayerById(caster.action.target);
+		target = PlayerByPlayerId(caster.action.target);
 		var multiplier = 1.0;
-		if(caster.dead == false && target.dead == false && winningTeam == 0)
+		if(caster.dead == false && target.dead == false && winningTeam == undefined)
 		{
 			spell = caster.action.spell;
 			if(spell.type == "special")
@@ -487,7 +537,7 @@ function ProccessRound()
 				{
 					//	Boost the target
 					target.Boost(1.0);
-					console.log(caster.name + " boosted " + target.name + "'s' spell!");
+					console.log(caster.name + " boosted " + target.name + "'s spell!");
 				}
 				if(spell.name == "heal")
 				{
@@ -583,7 +633,7 @@ function ProccessRound()
 	//	SHOW REOUND STATS
 	for(var i = 1; i < ConnectedPlayers().length + 1; i++)
 	{
-		var p = GetPlayerById(i);
+		var p = PlayerByPlayerId(i);
 		p.defence = 0;
 		p.multiplier = 1.0;
 		p.action = undefined;
@@ -596,6 +646,42 @@ function ProccessRound()
 	console.log("\n");
 }
 
+function HandleDisconnect(socket)
+{
+	var player = PlayerBySocketId(socket.id);
+
+	//	Check if the player actally exists
+	if(player == undefined)
+	{
+		console.log("Can not find player with socket id '" + socket.id + "'");
+	}
+	else
+	{
+		if(player.connected == false)
+		{
+			console.log(player.name + " is allready disconnected");
+		}
+		else
+		{
+			player.connected = false;
+			if(player.inGame == true)
+			{
+				//	Handle a player in the current game
+				console.log(player.name + " has left the game");
+				player.Death();
+				SendStatsToPlayers();
+			}
+			else if (player.inGame == false)
+			{
+				//	Handle a queueing player
+				console.log(player.name + " has left the queue");
+				RemovePlayerFromQueue(player);
+				TryStartGame();
+			}
+		}
+	}
+}
+
 function SendRoundResultsToClients(results)
 {
 
@@ -603,30 +689,42 @@ function SendRoundResultsToClients(results)
 
 function HandlePlayerDeath(player)
 {
-	if(player1.dead == true && player2.dead == true)
+	if(((player1 == undefined)||(player1.dead == true)) && ((player2 == undefined)||(player2.dead == true)))
 	{
-		//	TEAM 2 WINS
-		winningTeam = 2;
+		//	TEAM B WINS
+		winningTeam = "B";
 		EndGame(winningTeam);
 	}
-	else if(player3.dead == true && player4.dead == true)
+	else if(((player3 == undefined)||(player3.dead == true)) && ((player4 == undefined)||(player4.dead == true)))
 	{
-		//	TEAM 1 WINS
-		winningTeam = 1;
+		//	TEAM A WINS
+		winningTeam = "A";
 		EndGame(winningTeam);
 	}
 }
 
 function EndGame(winners)
 {
+	console.log("TEAM " + winners + " WINS!");
+	var players = ConnectedPlayers();
+	for(var i = 0; i < players.length; i++)
+	{
+		players[i].inGame = false;
+		//queuedPlayers.push(players[i]);
+	}
 	SendToPlayers('game over', winners);
-	winningTeam = 0;
 
-	connectedPlayers = new Array();
+	ResetGame();
+}
+function ResetGame()
+{
+	winningTeam = undefined;connectedPlayers = new Array();
 	player1 = undefined;
 	player2 = undefined;
 	player3 = undefined;
 	player4 = undefined;
+	gameInProgress = false;
+	TryStartGame();
 }
 
 function LoadSpells()
