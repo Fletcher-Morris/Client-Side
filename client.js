@@ -680,6 +680,32 @@ function Update()
         }
         server_text_message.SetText(txt);
     }
+    else if (gameState == "VS_SCREEN")
+    {
+        if (timeSinceState >= 4.5)
+        {
+            epic_sprite.Enable(false);
+            vs_text.Enable(false);
+            SetGameState("CHOOSING_ACTION");
+        }
+        if (timeSinceState >= 3.0)
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                enemyPlayers[i].sprite.Enable(true);
+                enemyPlayers[i].stats.Enable(true);
+            }
+        }
+        if (timeSinceState >= 1.5)
+        {
+            vs_text.Enable(true);
+        }
+        for (var i = 0; i < 2; i++)
+        {
+            teamPlayers[i].sprite.Enable(true);
+            teamPlayers[i].stats.Enable(true);
+        }
+    }
     else if (gameState == "CHOOSING_ACTION")
     {
         if ((hoveredButton != attack_btn) && (hoveredButton != defend_btn) && (hoveredButton != special_btn) && (hoveredButton != evade_btn))
@@ -697,32 +723,6 @@ function Update()
         }
 
         RedrawPlayerSprites();
-    }
-    else if (gameState == "VS_SCREEN")
-    {
-        if (timeSinceState >= 4.0)
-        {
-            epic_sprite.Enable(false);
-            vs_text.Enable(false);
-            SetGameState("CHOOSING_ACTION");
-        }
-        if (timeSinceState >= 3.0)
-        {
-            for (var i = 0; i < 2; i++)
-            {
-                enemyPlayers[i].sprite.Enable(true);
-                enemyPlayers[i].stats.Enable(true);
-            }
-        }
-        if (timeSinceState >= 1.0)
-        {
-            vs_text.Enable(true);
-        }
-        for (var i = 0; i < 2; i++)
-        {
-            teamPlayers[i].sprite.Enable(true);
-            teamPlayers[i].stats.Enable(true);
-        }
     }
     else if (gameState == "CHOOSING_ATTACK")
     {

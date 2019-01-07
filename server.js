@@ -5,76 +5,88 @@ var express = require('express');
 var http = require('http');
 var path = require('path');
 var socketIO = require('socket.io');
-
 var spellsJson = require('./spells.json');
 var loadedSpells = JSON.parse(JSON.stringify(spellsJson));
-
 var settingsJson = require('./settings.json');
 var serverSettings = JSON.parse(JSON.stringify(settingsJson));
 var bannedNames;
 var timeoutTime = 4;
 var port = 5000;
-LoadSettings();
-
-var app = express();
-var server = http.Server(app);
-var io = socketIO(server);
-
-app.set('port', port);
-app.use('', express.static(__dirname));
-
+var app;
+var server;
+var io;
+var serverStarted = false;
+var queuedPlayers;
+var gameInProgress = false;
+var connectedPlayers = 0;
+var player1; //	TEAM A
+var player2; // TEAM A
+var player3; // TEAM B
+var player4; // TEAM B
+var gameRound = 1;
+var winningTeam = undefined;
 
 // Starts the server.
-server.listen(port, StartServer());
-var queuedPlayers;
-
-// Add the WebSocket handlers
-io.on('connection', function(socket) {
-	SendSpellsToSocket(socket);
-
-	socket.on('disconnect', function()
-	{
-		HandleDisconnect(socket);
-	});
-
-	socket.on('spells confirmed', function(success)
-	{
-		if(success == false) SendSpellsToSocket(socket);
-		else socket.emit('confirm name');
-	});
-
-	socket.on('name is', function(name)
-	{
-		ConfirmWizard(socket, name);
-	});
-
-	socket.on('action', function(action)
-	{
-		PlayerBySocketId(socket.id).SetAction(action);
-	});
-
-});
+StartServer();
 
 function LoadSettings()
 {
 	port = serverSettings.port;
 	bannedNames = new Array();
-	var bannedNamesString = "Banned Names : "
 	timeoutTime = serverSettings.timeout;
 	for (var i = 0; i < serverSettings.bannedNames.length; i++)
 	{
 		bannedNames.push(serverSettings.bannedNames[i]);
-		bannedNamesString += serverSettings.bannedNames[i] + ", ";
 	}
-	console.log(bannedNamesString + "\n");
+	console.log("Loaded " + bannedNames.length + " banned names");
 }
 
 function StartServer()
 {
-	console.log('Starting server on port ' + port);
+	LoadSettings();
 	LoadSpells();
-	queuedPlayers = new Array();
-	ResetGame();
+	if(loadedSpells.length >= 1)
+	{
+		app = express();
+		server = http.Server(app);
+		io = socketIO(server);
+		app.set('port', port);
+		app.use('', express.static(__dirname));
+		server.listen(port, function(){});
+		// Add the WebSocket handlers
+		io.on('connection', function(socket) {
+			SendSpellsToSocket(socket);
+
+			socket.on('disconnect', function()
+			{
+				HandleDisconnect(socket);
+			});
+
+			socket.on('spells confirmed', function(success)
+			{
+				if(success == false) SendSpellsToSocket(socket);
+				else socket.emit('confirm name');
+			});
+
+			socket.on('name is', function(name)
+			{
+				ConfirmWizard(socket, name);
+			});
+
+			socket.on('action', function(action)
+			{
+				PlayerBySocketId(socket.id).SetAction(action);
+			});
+		});
+		serverStarted = true;
+		console.log('Starting server on port ' + port);
+		queuedPlayers = new Array();
+		ResetGame();
+	}
+	else
+	{
+		console.log("Could not start server, spells not loaded");
+	}
 }
 
 function SendSpellsToSocket(socket)
@@ -252,7 +264,7 @@ function CheckBannedNames(name)
 {
 	for(var i = 0; i < bannedNames.length; i++)
 	{
-		if(bannedNames[i] == name) return true;
+		if(name.includes(bannedNames[i]) == true) return true;
 	}
 	return false;
 }
@@ -406,15 +418,6 @@ class SimpleStats
 	}
 }
 
-var gameInProgress = false;
-var connectedPlayers = 0;
-var player1; //	TEAM A
-var player2; // TEAM A
-var player3; // TEAM B
-var player4; // TEAM B
-var gameRound = 1;
-var winningTeam = undefined;
-
 function ConnectedPlayers()
 {
 	var result = [];
@@ -443,7 +446,7 @@ function StartGame()
 
 	var nameString = "";
 	nameString += PlayerByPlayerId(1).name + " and ";
-	nameString += PlayerByPlayerId(2).name + " VS ";
+	nameString += PlayerByPlayerId(2).name + " vs ";
 	nameString += PlayerByPlayerId(3).name + " and ";
 	nameString += PlayerByPlayerId(4).name;
 	for(var i = 0; i < 4; i++)
@@ -653,7 +656,7 @@ function HandleDisconnect(socket)
 	//	Check if the player actally exists
 	if(player == undefined)
 	{
-		console.log("Can not find player with socket id '" + socket.id + "'");
+		//console.log("Can not find player with socket id '" + socket.id + "'");
 	}
 	else
 	{
