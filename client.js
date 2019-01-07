@@ -122,7 +122,7 @@ window.addEventListener("load", function()
 
 function SetUpNetworking()
 {
-    if(connectionSettings != undefined)
+    if (connectionSettings != undefined)
     {
         connectionSettings = JSON.parse(JSON.stringify(connectionSettings));
         console.log("Loaded connection settings : " + connectionSettings.address + ", " + connectionSettings.port);
@@ -205,7 +205,7 @@ function SetUpNetworking()
     });
     socket.on('game over', function(winners)
     {
-        if(selfPlayer.team == winners) wonLastGame = true;
+        if (selfPlayer.team == winners) wonLastGame = true;
         else wonLastGame = false;
         SetGameState("GAME_OVER");
     });
@@ -698,27 +698,27 @@ function Update()
 
         RedrawPlayerSprites();
     }
-    else if(gameState == "VS_SCREEN")
+    else if (gameState == "VS_SCREEN")
     {
-        if(timeSinceState >= 4.0)
+        if (timeSinceState >= 4.0)
         {
             epic_sprite.Enable(false);
             vs_text.Enable(false);
-            SetGameState("CHOOSING_ATTACK");
+            SetGameState("CHOOSING_ACTION");
         }
-        if(timeSinceState >= 3.0)
+        if (timeSinceState >= 3.0)
         {
-            for(var i = 0; i < 2; i ++)
+            for (var i = 0; i < 2; i++)
             {
                 enemyPlayers[i].sprite.Enable(true);
                 enemyPlayers[i].stats.Enable(true);
             }
         }
-        if(timeSinceState >= 1.0)
+        if (timeSinceState >= 1.0)
         {
             vs_text.Enable(true);
         }
-        for(var i = 0; i < 2; i ++)
+        for (var i = 0; i < 2; i++)
         {
             teamPlayers[i].sprite.Enable(true);
             teamPlayers[i].stats.Enable(true);
@@ -907,9 +907,9 @@ function Update()
 
         RedrawPlayerSprites();
     }
-    else if(gameState == "GAME_OVER")
+    else if (gameState == "GAME_OVER")
     {
-        if(timeSinceState >= 3.0) SetGameState("CONNECTING_TO_SERVER");
+        if (timeSinceState >= 3.0) SetGameState("CONNECTING_TO_SERVER");
     }
 
     for (var i = 0; i < all_Objects.length; i++)
@@ -1047,10 +1047,10 @@ function EnterGameState(force)
         EnablePlayerStats(true);
         FindNextTarget(chosenSpell).Target();
     }
-    else if(changeToState == "GAME_OVER")
+    else if (changeToState == "GAME_OVER")
     {
         server_text_message.Enable(true);
-        if(wonLastGame == true)
+        if (wonLastGame == true)
         {
             server_text_message.SetText("VICTORY");
         }
@@ -1099,9 +1099,10 @@ function ClearAll()
         all_Objects[i].clear = true;
     }
 }
+
 function ClearCanvas()
 {
-    context.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT);
+    context.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 
 function EnableActionButtons(enable)
@@ -1518,7 +1519,7 @@ class ButtonObject extends Object
             }
             this.clear = false;
         }
-        else if(this.hoverClear == true)
+        else if (this.hoverClear == true)
         {
             context.clearRect(this.pos.x, this.pos.y, this.width, this.height);
             if (debugGraphics == true)
@@ -1623,11 +1624,11 @@ class TextObject extends Object
             this.lineSplitter = splitter;
             this.multiline = true;
             this.lineAnchor = anchor;
-            if(anchor == "top")
+            if (anchor == "top")
             {
                 this.yOffset = -(this.height / 2.0);
             }
-            else if(anchor == "center")
+            else if (anchor == "center")
             {
                 this.yOffset = 0;
             }
@@ -1641,15 +1642,15 @@ class TextObject extends Object
     SetAlign(align)
     {
         this.textAlign = align;
-        if(align == "left")
+        if (align == "left")
         {
             this.xOffset = -(this.width / 2.0);
         }
-        else if(align == "right")
+        else if (align == "right")
         {
             this.xOffset = (this.width / 2.0);
         }
-        else if(align == "center")
+        else if (align == "center")
         {
             this.xOffset = 0;
         }
@@ -1715,7 +1716,7 @@ function LoadSpells()
     for (var i = 0; i < loadedSpells.length; i++)
     {
         var newSpell = loadedSpells[i];
-        if(GetSpell(newSpell.name) == undefined)
+        if (GetSpell(newSpell.name) == undefined)
         {
             if (newSpell.type == "attack")
             {
