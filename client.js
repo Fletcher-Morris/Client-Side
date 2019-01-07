@@ -122,7 +122,13 @@ window.addEventListener("load", function()
 
 function SetUpNetworking()
 {
-    socket = io(serverAddress + ":" + serverPort);
+    if(connectionSettings != undefined)
+    {
+        connectionSettings = JSON.parse(JSON.stringify(connectionSettings));
+        console.log("Loaded connection settings : " + connectionSettings.address + ", " + connectionSettings.port);
+    }
+
+    socket = io("http://" + connectionSettings.address + ":" + connectionSettings.port);
     socket.on('marco', function()
     {
         socket.emit('polo', function(data) {});
