@@ -649,6 +649,17 @@ function ProccessRound()
 	console.log("\n");
 }
 
+class SpellResult
+{
+	constructor(caster, target, spell, result)
+	{
+		this.caster = caster;
+		this.target = target;
+		this.spell = spell;
+		this.result = result;
+	}
+}
+
 function HandleDisconnect(socket)
 {
 	var player = PlayerBySocketId(socket.id);
