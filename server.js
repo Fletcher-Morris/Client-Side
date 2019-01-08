@@ -473,7 +473,7 @@ function ProccessRound()
 	var target;
 	var spell;
 
-	var spellResults;
+	var spellResults = new Array();
 
 	//	Check for boost spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
@@ -648,7 +648,7 @@ function ProccessRound()
 			if(target.defence < 0) target.defence = 0;
 			if(caster.defence < 0) caster.defence = 0;
 
-			if(spell.type != "evade") spellResults.push(new SpellResult(caster.id, target.id, spell.name, resultText, resultResult))
+			if(spell.type != "evade") spellResults.push(new SpellResult(caster.id, target.id, spell.name, resultText, resultResult));
 		}
 	}
 
@@ -659,6 +659,7 @@ function ProccessRound()
 		p.defence = 0;
 		p.multiplier = 1.0;
 		p.action = undefined;
+		p.Send('spell results', spellResults);
 		console.log(p.name + " { Health: " + p.health + ", Mana: " + p.mana + ", Defence: " + p.defence + " }");
 	}
 
@@ -675,7 +676,7 @@ class SpellResult
 		this.caster = caster;
 		this.target = target;
 		this.spell = spell;
-		this.text = result;
+		this.text = text;
 		this.result = result;
 	}
 }

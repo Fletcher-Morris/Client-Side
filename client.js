@@ -106,6 +106,7 @@ var selfPlayer;
 var targetPlayer;
 var teamPlayers, enemyPlayers;
 var wonLastGame;
+var spellResults;
 
 
 window.addEventListener("load", function()
@@ -209,6 +210,11 @@ function SetUpNetworking()
             GetPlayerById(data[i].id).SetStats(data[i].health, data[i].mana, data[i].defence);
         }
         UpdatePlayerStatsText();
+    });
+    socket.on('spell results', function(data)
+    {
+        spellResults = data;
+        console.log(spellResults);
     });
     socket.on('next round', function(data)
     {
