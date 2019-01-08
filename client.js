@@ -94,6 +94,7 @@ var buttonPressedThisFrame = true;
 //  GAME STUFF
 var gameState = "START";
 var changeToState = "START";
+var forceState = false;
 var hoveredButton = attack_btn;
 var playerName = "";
 var timeSinceStart = 0.0;
@@ -750,7 +751,7 @@ function Update()
             if (hoveredButton == attack_btn) SetGameState("CHOOSING_EVADE");
         }
 
-        RedrawPlayerSprites();
+        //RedrawPlayerSprites();
     }
     else if (gameState == "CHOOSING_ATTACK")
     {
@@ -961,7 +962,27 @@ function Update()
                 }
             }
         }
-        else if(timeSinceState <= 6.0)
+        else if(timeSinceState >= 5.0)
+        {
+            for(var i = 0; i < 4; i++)
+            {
+                if((playerData[i].id == spellResults[0].caster) || (playerData[i].id == spellResults[0].target))
+                {                            
+                }
+                else
+                {
+                    if(playerData[i].team == selfPlayer.team)
+                    {
+                        playerData[i].sprite.Move(90,0);
+                    }
+                    else
+                    {
+                        playerData[i].sprite.Move(-90,0);
+                    }
+                }
+            }
+        }
+        if(timeSinceState >= 3.0)
         {
             for(var i = 0; i < 4; i++)
             {
@@ -969,9 +990,29 @@ function Update()
                 {
                     playerData[i].sprite.Enable(false);
                     spellCastingAmination.Enable(true);
+                    spellCastingAmination.loop = false;
                     spellCastingAmination.SetPosition(playerData[i].sprite.pos.x, playerData[i].sprite.pos.y);
                 }
             }
+            if(timeSinceState >= 5.0)
+            {
+                server_text_message.SetText(spellResults[0].result);
+            }
+            else if(timeSinceState >= 3.0)
+            {
+                server_text_message.SetText(spellResults[0].text);
+                server_text_message.Enable(true);
+            }
+            else
+            {
+                server_text_message.Enable(false);
+            }
+        }
+        if (timeSinceState >= 8.0)
+        {
+            spellResults.shift();
+            if(spellResults.length >= 1) {SetGameState("SPELL_RESULTS", true);}
+            else {SetGameState("CHOOSING_ACTION");}
         }
     }
     else if (gameState == "GAME_OVER")
@@ -987,16 +1028,18 @@ function Update()
     FixInput();
 }
 
-function SetGameState(state)
+function SetGameState(state, force)
 {
     changeToState = state;
+    forceState = force;
 }
 
-function EnterGameState(force)
+function EnterGameState()
 {
     if (changeToState == undefined) return;
-    if (changeToState == gameState && force !== true) return;
+    if (changeToState == gameState && forceState == false) return;
     var isState = true;
+    forceState = false;
     timeSinceState = 0;
 
     ClearCanvas();
@@ -1122,6 +1165,7 @@ function EnterGameState(force)
     else if (changeToState == "SPELL_RESULTS")
     {
         DisableActiveObjects();
+        spellCastingAmination.loop = true;
         EnablePlayerSprites(true);
     }
     else if (changeToState == "GAME_OVER")
