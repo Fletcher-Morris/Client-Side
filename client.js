@@ -73,7 +73,7 @@ var player_2_sprite;
 var player_3_sprite;
 var player_4_sprite;
 var spellDescription;
-var wizzAmimTest;
+var spellCastingAmination;
 
 //  RENDERER STUFF
 var renderer;
@@ -275,14 +275,14 @@ function CreateObjects()
     evade_btn = new ButtonObject(new Vector2(600, CANVAS_HEIGHT - 50), 200, 50, "EVADE", 25);
     evade_btn.SetFunction("ACTION_evade");
 
-    wizzAmimTest = new ImageObject("wizzTestSprite", new Vector2(450, 50), aim_0_img, 3);
-    wizzAmimTest.AddAnimationFrame(aim_1_img);
-    wizzAmimTest.AddAnimationFrame(aim_2_img);
-    wizzAmimTest.AddAnimationFrame(aim_3_img);
-    wizzAmimTest.AddAnimationFrame(aim_4_img, 10);
-    wizzAmimTest.AddAnimationFrame(aim_3_img);
-    wizzAmimTest.AddAnimationFrame(aim_2_img);
-    wizzAmimTest.AddAnimationFrame(aim_1_img);
+    spellCastingAmination = new ImageObject("wizzTestSprite", new Vector2(450, 50), aim_0_img, 3);
+    spellCastingAmination.AddAnimationFrame(aim_1_img);
+    spellCastingAmination.AddAnimationFrame(aim_2_img);
+    spellCastingAmination.AddAnimationFrame(aim_3_img);
+    spellCastingAmination.AddAnimationFrame(aim_4_img, 10);
+    spellCastingAmination.AddAnimationFrame(aim_3_img);
+    spellCastingAmination.AddAnimationFrame(aim_2_img);
+    spellCastingAmination.AddAnimationFrame(aim_1_img);
 
     hoveredButton = attack_btn;
 }
@@ -937,11 +937,18 @@ function Update()
     }
     else if (gameState == "SPELL_RESULTS")
     {
+        for(var i = 0; i < 4; i++)
+        {
+            playerData[i].sprite.SetImage(wizard_img);
+        }
         if(timeSinceState <= 3.0)
         {
             for(var i = 0; i < 4; i++)
             {
-                if((playerData[i].id != spellResults[0].caster) || (playerData[i].id != spellResults[0].target))
+                if((playerData[i].id == spellResults[0].caster) || (playerData[i].id == spellResults[0].target))
+                {                            
+                }
+                else
                 {
                     if(playerData[i].team == selfPlayer.team)
                     {
@@ -952,7 +959,18 @@ function Update()
                         playerData[i].sprite.Move(90,0);
                     }
                 }
-                console.log(playerData[i].sprite.pos);
+            }
+        }
+        else if(timeSinceState <= 6.0)
+        {
+            for(var i = 0; i < 4; i++)
+            {
+                if(playerData[i].id == spellResults[0].caster)
+                {
+                    playerData[i].sprite.Enable(false);
+                    spellCastingAmination.Enable(true);
+                    spellCastingAmination.SetPosition(playerData[i].sprite.pos.x, playerData[i].sprite.pos.y);
+                }
             }
         }
     }
@@ -986,7 +1004,7 @@ function EnterGameState(force)
     if (changeToState == "TEST_STATE")
     {
         DisableActiveObjects();
-        wizzAmimTest.Enable(true);
+        spellCastingAmination.Enable(true);
     }
     else if (changeToState == "CONNECTING_TO_SERVER")
     {
@@ -1348,6 +1366,7 @@ class Object
 
     SetPosition(x, y)
     {
+        if(this.pos.x == x && this.pos.y == y) return;
         this.lastPos = this.pos;
         this.pos.x = x;
         this.pos.y = y;
