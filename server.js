@@ -473,7 +473,7 @@ function ProccessRound()
 	var target;
 	var spell;
 
-	var results;
+	var spellResults;
 
 	//	Check for boost spells
 	for(var i = 0; i < ConnectedPlayers().length; i++)
@@ -528,6 +528,8 @@ function ProccessRound()
 
 	for(var i = 0; i < executionOrder.length; i++)
 	{
+		var resultText = "";
+		var resultResult = "";
 		caster = executionOrder[i];
 		target = PlayerByPlayerId(caster.action.target);
 		var multiplier = 1.0;
@@ -540,6 +542,8 @@ function ProccessRound()
 				{
 					//	Boost the target
 					target.Boost(1.0);
+					resultText = (caster.name + " cast a boosting spell on " + target.name + "!");
+					resultResult = ("Improving their wizarding abillities!");
 					console.log(caster.name + " boosted " + target.name + "'s spell!");
 				}
 				if(spell.name == "heal")
@@ -548,12 +552,15 @@ function ProccessRound()
 					target.Heal(caster.action.spell.effect * caster.multiplier);
 					if(caster == target)
 					{
+						resultText = (caster.name + " cast a healing spell on themselves!");
 						console.log(caster.name + " healed themselves by " + (caster.action.spell.effect * caster.multiplier) + " points!");
 					}
 					else
 					{
+						resultText = (caster.name + " cast a healing spell on " + target.name + "!");
 						console.log(caster.name + " healed " + target.name + " by " + (caster.action.spell.effect * caster.multiplier) + " points!");
 					}
+					resultResult = ("Increasing their hp to " + target.health + "!");
 				}
 			}
 			if(spell.type == "defend")
@@ -561,27 +568,33 @@ function ProccessRound()
 				target.Defend(spell.effect * caster.multiplier);
 				if(caster == target)
 				{
+					resultText = (caster.name + " cast a " + spell.name + " spell on themselves!");
 					console.log(caster.name + " increased their defence by " + (spell.effect * caster.multiplier) + " points!");
 				}
 				else
 				{
+					resultText = (caster.name + " cast a " + spell.name + " spell on " + target.name + "!");
 					console.log(caster.name + " increased " + target.name + "'s defence by " + (spell.effect * caster.multiplier) + " points!");
 				}
+				resultResult = ("Increasing their defence to " + target.defence + "!");
 			}
 			else if(spell.type == "attack")
 			{
+				resultText = (caster.name + " cast a " + spell.name + " spell on " + target.name + "!");
 				if(target.action.spell.type == "evade")
 				{
 					if(CoinFlip(1.0 / target.action.spell.effect))
 					{
 						//	Evade fails
 						target.Damage(spell.effect * caster.multiplier);
+						resultResult = ("Damaging " + target.name + " by " + (spell.effect * caster.multiplier) + " hp!");
 						console.log(target.name + " tried to evade " + caster.name + "'s spell but failed!");
 						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
 					}
 					else
 					{
 						//	Evade succeedes
+						resultResult = ("But " + target.name + " evaded!");
 						console.log(caster.name + " used '" + spell.name + "' on " + target.name + ", but " + target.name + " evaded!");
 					}
 					target.evadedNothing = false;
@@ -594,16 +607,19 @@ function ProccessRound()
 					{
 						//	Reflect
 						if(differenceValue >= (spell.effect * caster.multiplier)) differenceValue = (spell.effect * caster.multiplier);
+						resultResult = ("But " + target.name + "'s defence deflected " + differenceValue + " back towards them!");
 						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + differenceValue + " back towards them!");
 						caster.Damage(differenceValue);
 					}
 					else if (differenceValue <= -1)
 					{
 						target.Damage(-differenceValue);
+						resultResult = (target.name + "'s defence absorbed some of the damage!");
 						console.log(target.name + "'s defence absorbed " + (-differenceValue) + " damage from " + caster.name + "'s '" + spell.name + "' spell!");
 					}
 					else
 					{
+						resultResult = ("But " + target.name + "'s defence protected them!");
 						console.log(target.name + "'s defence protected them from " + caster.name + "'s '" + spell.name + "' spell!");
 					}
 					target.defence -= (spell.effect * caster.multiplier);
@@ -611,7 +627,8 @@ function ProccessRound()
 				else
 				{
 					target.Damage(spell.effect * caster.multiplier);
-						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
+					resultResult = ("It did " + (spell.effect * caster.multiplier) + " damage!");
+					console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
 				}
 
 				target.DeathCheck();
@@ -630,6 +647,8 @@ function ProccessRound()
 
 			if(target.defence < 0) target.defence = 0;
 			if(caster.defence < 0) caster.defence = 0;
+
+			if(spell.type != "evade") spellResults.push(new SpellResult(caster.id, target.id, spell.name, resultText, resultResult))
 		}
 	}
 
@@ -651,11 +670,12 @@ function ProccessRound()
 
 class SpellResult
 {
-	constructor(caster, target, spell, result)
+	constructor(caster, target, spell, text, result)
 	{
 		this.caster = caster;
 		this.target = target;
 		this.spell = spell;
+		this.text = result;
 		this.result = result;
 	}
 }
