@@ -43,13 +43,13 @@ epic_2_img.src = 'images/epic_2.png';
 var aim_0_img = new Image();
 aim_0_img.src = 'images/wizz_aim_0.png';
 var aim_1_img = new Image();
-aim_0_img.src = 'images/wizz_aim_1.png';
+aim_1_img.src = 'images/wizz_aim_1.png';
 var aim_2_img = new Image();
-aim_0_img.src = 'images/wizz_aim_2.png';
+aim_2_img.src = 'images/wizz_aim_2.png';
 var aim_3_img = new Image();
-aim_0_img.src = 'images/wizz_aim_3.png';
+aim_3_img.src = 'images/wizz_aim_3.png';
 var aim_4_img = new Image();
-aim_0_img.src = 'images/wizz_aim_4.png';
+aim_4_img.src = 'images/wizz_aim_4.png';
 
 
 //  OBJECTS
@@ -222,6 +222,86 @@ function SetUpNetworking()
     });
 }
 
+function CreateObjects()
+{
+    all_Objects = new Array();
+
+    //  NAME SELECTION PAGE OBJECTS
+    server_text_message = new TextObject("server_message", new Vector2(400, 280), 800, 50, "CHOOSE A NAME", 25, "white");
+    nickname_text = new TextObject("name_text", new Vector2(400, 320), 400, 40, "", 25, "white");
+    nickname_text.SetClearColour("orange");
+    submit_name_btn = new ButtonObject(new Vector2(300, 450), 200, 50, "ENTER", 25);
+    submit_name_btn.SetFunction("SUBMITNAME");
+    submit_name_btn.name = "submit_name_btn";
+
+    epic_sprite = new ImageObject("epic_sprite", new Vector2(350, 0), epic_0_img, 2);
+    epic_sprite.AddAnimationFrame(epic_1_img);
+    epic_sprite.AddAnimationFrame(epic_2_img);
+    vs_text = new TextObject("vs_text", new Vector2(400, 300), 80, 40, "VS", 40, "white");
+
+    spellDescription = new TextObject("spell_description", new Vector2(400, 250), 400, 180, "SPELL DESCRIPTION", 15, "white");
+    spellDescription.SetSplitter('#', "top");
+
+    player_1_sprite = new ImageObject("player_1", new Vector2(50, 50), wizard_img);
+    player_2_sprite = new ImageObject("player_2", new Vector2(50, 300), wizard_img);
+    player_3_sprite = new ImageObject("player_3", new Vector2(650, 50), wizard_img);
+    player_4_sprite = new ImageObject("player_4", new Vector2(650, 300), wizard_img);
+    player_1_info = new TextObject("player_1_info", new Vector2(240, 100), 150, 90, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
+    player_1_info.SetSplitter('#', "top");
+    player_1_info.SetAlign("left");
+    player_2_info = new TextObject("player_2_info", new Vector2(240, 400), 150, 90, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
+    player_2_info.SetSplitter('#', "top");
+    player_2_info.SetAlign("left");
+    player_3_info = new TextObject("player_3_info", new Vector2(560, 100), 150, 90, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
+    player_3_info.SetSplitter('#', "top");
+    player_3_info.SetAlign("right");
+    player_4_info = new TextObject("player_4_info", new Vector2(560, 400), 150, 90, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
+    player_4_info.SetSplitter('#', "top");
+    player_4_info.SetAlign("right");
+
+    attack_btn = new ButtonObject(new Vector2(0, CANVAS_HEIGHT - 50), 200, 50, "ATTACK", 25);
+    attack_btn.SetFunction("CHOOSING_ATTACK");
+    defend_btn = new ButtonObject(new Vector2(200, CANVAS_HEIGHT - 50), 200, 50, "DEFEND", 25);
+    defend_btn.SetFunction("CHOOSING_DEFEND");
+    special_btn = new ButtonObject(new Vector2(400, CANVAS_HEIGHT - 50), 200, 50, "SPECIAL", 25);
+    special_btn.SetFunction("CHOOSING_SPECIAL");
+    evade_btn = new ButtonObject(new Vector2(600, CANVAS_HEIGHT - 50), 200, 50, "EVADE", 25);
+    evade_btn.SetFunction("ACTION_evade");
+
+    wizzAmimTest = new ImageObject("wizzTestSprite", new Vector2(450, 50), aim_0_img, 4);
+    wizzAmimTest.AddAnimationFrame(aim_1_img);
+    wizzAmimTest.AddAnimationFrame(aim_2_img);
+    wizzAmimTest.AddAnimationFrame(aim_3_img);
+    wizzAmimTest.AddAnimationFrame(aim_4_img);
+
+    hoveredButton = attack_btn;
+}
+
+function CreateSpellButtons()
+{
+    for (var i = 0; i < attackSpells.length; i++)
+    {
+        var spellButton = new ButtonObject(new Vector2(0, CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, attackSpells[i].name.toUpperCase(), 20);
+        spellButton.SetFunction("ACTION_" + attackSpells[i].name);
+        attack_choice_btns.push(spellButton);
+        spellButton.Enable(false);
+    }
+    for (var i = 0; i < defendSpells.length; i++)
+    {
+        var spellButton = new ButtonObject(new Vector2(200, CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, defendSpells[i].name.toUpperCase(), 20);
+        spellButton.SetFunction("ACTION_" + defendSpells[i].name);
+        defend_choice_btns.push(spellButton);
+        spellButton.Enable(false);
+    }
+    for (var i = 0; i < specialSpells.length; i++)
+    {
+        var spellButton = new ButtonObject(new Vector2(400, CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, specialSpells[i].name.toUpperCase(), 20);
+        spellButton.SetFunction("ACTION_" + specialSpells[i].name);
+        special_choice_btns.push(spellButton);
+        spellButton.Enable(false);
+    }
+}
+
 class Player
 {
     constructor(name, sprite, stats)
@@ -307,86 +387,6 @@ function GetPlayerById(id)
     for (var i = 0; i < 4; i++)
     {
         if (playerData[i].id == id) return playerData[i];
-    }
-}
-
-function CreateObjects()
-{
-    all_Objects = new Array();
-
-    //  NAME SELECTION PAGE OBJECTS
-    server_text_message = new TextObject("server_message", new Vector2(400, 280), 800, 50, "CHOOSE A NAME", 25, "white");
-    nickname_text = new TextObject("name_text", new Vector2(400, 320), 400, 40, "", 25, "white");
-    nickname_text.SetClearColour("orange");
-    submit_name_btn = new ButtonObject(new Vector2(300, 450), 200, 50, "ENTER", 25);
-    submit_name_btn.SetFunction("SUBMITNAME");
-    submit_name_btn.name = "submit_name_btn";
-
-    epic_sprite = new ImageObject("epic_sprite", new Vector2(350, 0), epic_0_img, 2);
-    epic_sprite.AddAnimationFrame(epic_1_img);
-    epic_sprite.AddAnimationFrame(epic_2_img);
-    vs_text = new TextObject("vs_text", new Vector2(400, 300), 80, 40, "VS", 40, "white");
-
-    spellDescription = new TextObject("spell_description", new Vector2(400, 250), 400, 180, "SPELL DESCRIPTION", 15, "white");
-    spellDescription.SetSplitter('#', "top");
-
-    player_1_sprite = new ImageObject("player_1", new Vector2(50, 50), wizard_img);
-    player_2_sprite = new ImageObject("player_2", new Vector2(50, 300), wizard_img);
-    player_3_sprite = new ImageObject("player_3", new Vector2(650, 50), wizard_img);
-    player_4_sprite = new ImageObject("player_4", new Vector2(650, 300), wizard_img);
-    player_1_info = new TextObject("player_1_info", new Vector2(240, 100), 150, 90, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
-    player_1_info.SetSplitter('#', "top");
-    player_1_info.SetAlign("left");
-    player_2_info = new TextObject("player_2_info", new Vector2(240, 400), 150, 90, "player 2#hp : 10#mn : 10#df : 0", 15, "white");
-    player_2_info.SetSplitter('#', "top");
-    player_2_info.SetAlign("left");
-    player_3_info = new TextObject("player_3_info", new Vector2(560, 100), 150, 90, "player 3#hp : 10#mn : 10#df : 0", 15, "white");
-    player_3_info.SetSplitter('#', "top");
-    player_3_info.SetAlign("right");
-    player_4_info = new TextObject("player_4_info", new Vector2(560, 400), 150, 90, "player 4#hp : 10#mn : 10#df : 0", 15, "white");
-    player_4_info.SetSplitter('#', "top");
-    player_4_info.SetAlign("right");
-
-    attack_btn = new ButtonObject(new Vector2(0, CANVAS_HEIGHT - 50), 200, 50, "ATTACK", 25);
-    attack_btn.SetFunction("CHOOSING_ATTACK");
-    defend_btn = new ButtonObject(new Vector2(200, CANVAS_HEIGHT - 50), 200, 50, "DEFEND", 25);
-    defend_btn.SetFunction("CHOOSING_DEFEND");
-    special_btn = new ButtonObject(new Vector2(400, CANVAS_HEIGHT - 50), 200, 50, "SPECIAL", 25);
-    special_btn.SetFunction("CHOOSING_SPECIAL");
-    evade_btn = new ButtonObject(new Vector2(600, CANVAS_HEIGHT - 50), 200, 50, "EVADE", 25);
-    evade_btn.SetFunction("ACTION_evade");
-
-    wizzAmimTest = new ImageObject("wizzTestSprite", new Vector2(350, 0), aim_0_img, 2);
-    wizzAmimTest.AddAnimationFrame(aim_1_img);
-    wizzAmimTest.AddAnimationFrame(aim_2_img);
-    wizzAmimTest.AddAnimationFrame(aim_3_img);
-    wizzAmimTest.AddAnimationFrame(aim_4_img);
-
-    hoveredButton = attack_btn;
-}
-
-function CreateSpellButtons()
-{
-    for (var i = 0; i < attackSpells.length; i++)
-    {
-        var spellButton = new ButtonObject(new Vector2(0, CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, attackSpells[i].name.toUpperCase(), 20);
-        spellButton.SetFunction("ACTION_" + attackSpells[i].name);
-        attack_choice_btns.push(spellButton);
-        spellButton.Enable(false);
-    }
-    for (var i = 0; i < defendSpells.length; i++)
-    {
-        var spellButton = new ButtonObject(new Vector2(200, CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, defendSpells[i].name.toUpperCase(), 20);
-        spellButton.SetFunction("ACTION_" + defendSpells[i].name);
-        defend_choice_btns.push(spellButton);
-        spellButton.Enable(false);
-    }
-    for (var i = 0; i < specialSpells.length; i++)
-    {
-        var spellButton = new ButtonObject(new Vector2(400, CANVAS_HEIGHT - 100 - (i * 50)), 200, 50, specialSpells[i].name.toUpperCase(), 20);
-        spellButton.SetFunction("ACTION_" + specialSpells[i].name);
-        special_choice_btns.push(spellButton);
-        spellButton.Enable(false);
     }
 }
 
