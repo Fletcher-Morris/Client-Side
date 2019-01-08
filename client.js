@@ -268,11 +268,14 @@ function CreateObjects()
     evade_btn = new ButtonObject(new Vector2(600, CANVAS_HEIGHT - 50), 200, 50, "EVADE", 25);
     evade_btn.SetFunction("ACTION_evade");
 
-    wizzAmimTest = new ImageObject("wizzTestSprite", new Vector2(450, 50), aim_0_img, 4);
+    wizzAmimTest = new ImageObject("wizzTestSprite", new Vector2(450, 50), aim_0_img, 3);
     wizzAmimTest.AddAnimationFrame(aim_1_img);
     wizzAmimTest.AddAnimationFrame(aim_2_img);
     wizzAmimTest.AddAnimationFrame(aim_3_img);
-    wizzAmimTest.AddAnimationFrame(aim_4_img);
+    wizzAmimTest.AddAnimationFrame(aim_4_img, 10);
+    wizzAmimTest.AddAnimationFrame(aim_3_img);
+    wizzAmimTest.AddAnimationFrame(aim_2_img);
+    wizzAmimTest.AddAnimationFrame(aim_1_img);
 
     hoveredButton = attack_btn;
 }
@@ -632,6 +635,10 @@ function Update()
     {
         SetGameState("CONNECTING_TO_SERVER");
     }
+    else if (gameState == "TEST_STATE")
+    {
+
+    }
     else if (gameState == "CONNECTING_TO_SERVER")
     {
         dotTimer += 2.0 / FPS_LIMIT;
@@ -948,7 +955,12 @@ function EnterGameState(force)
 
     ClearCanvas();
 
-    if (changeToState == "CONNECTING_TO_SERVER")
+    if (changeToState == "TEST_STATE")
+    {
+        DisableActiveObjects();
+        wizzAmimTest.Enable(true);
+    }
+    else if (changeToState == "CONNECTING_TO_SERVER")
     {
         DisableActiveObjects();
         server_text_message.Enable(true);
@@ -1367,11 +1379,21 @@ class ImageObject extends Object
         this.currentFrame = 0;
         this.SetImage(this.animFrames[0]);
     }
-    AddAnimationFrame(frame)
+    AddAnimationFrame(frame, quantity)
     {
         if(this.animFrames == undefined) this.animFrames = new Array();
         this.animated = true;
-        this.animFrames.push(frame);
+        if(quantity == undefined)
+        {
+            this.animFrames.push(frame);
+        }
+        else
+        {
+            for(var i = 1; i < quantity + 1; i++)
+            {
+                this.animFrames.push(frame);
+            }
+        }        
     }
 
     Update()
