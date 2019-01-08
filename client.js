@@ -990,7 +990,7 @@ function Update()
                 {
                     playerData[i].sprite.Enable(false);
                     spellCastingAmination.Enable(true);
-                    spellCastingAmination.loop = false;
+                    spellCastingAmination.SetLooping(false);
                     spellCastingAmination.SetPosition(playerData[i].sprite.pos.x, playerData[i].sprite.pos.y);
                 }
             }
@@ -1165,7 +1165,7 @@ function EnterGameState()
     else if (changeToState == "SPELL_RESULTS")
     {
         DisableActiveObjects();
-        spellCastingAmination.loop = true;
+        spellCastingAmination.SetLooping(true);
         EnablePlayerSprites(true);
     }
     else if (changeToState == "GAME_OVER")
@@ -1503,6 +1503,11 @@ class ImageObject extends Object
                 this.animFrames.push(frame);
             }
         }        
+    }
+    SetLooping(loop)
+    {
+        this.loop = loop;
+        if(loop == true) this.animComplete = false;
     }
 
     Update()
