@@ -215,10 +215,11 @@ function SetUpNetworking()
     {
         spellResults = data;
         console.log(spellResults);
+        SetGameState("SPELL_RESULTS");
     });
     socket.on('next round', function(data)
     {
-        SetGameState("CHOOSING_ACTION", true);
+        //SetGameState("CHOOSING_ACTION", true);
     });
     socket.on('game over', function(winners)
     {
@@ -641,7 +642,7 @@ function Update()
     {
         SetGameState("CONNECTING_TO_SERVER");
     }
-    else if (gameState == "TEST_STATE")
+    else if (gameState == "")
     {
 
     }
@@ -934,6 +935,27 @@ function Update()
 
         RedrawPlayerSprites();
     }
+    else if (gameState == "SPELL_RESULTS")
+    {
+        if(timeSinceState <= 3.0)
+        {
+            for(var i = 0; i < 4; i++)
+            {
+                if((playerData[i].id != spellResults[0].caster) || (playerData[i].id != spellResults[0].target))
+                {
+                    if(playerData[i].team == selfPlayer.team)
+                    {
+                        playerData[i].sprite.Move(-90,0);
+                    }
+                    else
+                    {
+                        playerData[i].sprite.Move(90,0);
+                    }
+                }
+                console.log(playerData[i].sprite.pos);
+            }
+        }
+    }
     else if (gameState == "GAME_OVER")
     {
         if (timeSinceState >= 3.0) SetGameState("CONNECTING_TO_SERVER");
@@ -1078,6 +1100,11 @@ function EnterGameState(force)
         EnablePlayerSprites(true);
         EnablePlayerStats(true);
         FindNextTarget(chosenSpell).Target();
+    }
+    else if (changeToState == "SPELL_RESULTS")
+    {
+        DisableActiveObjects();
+        EnablePlayerSprites(true);
     }
     else if (changeToState == "GAME_OVER")
     {
@@ -1286,6 +1313,7 @@ class Object
         this.renderable = false;
         this.Enable(false);
         this.clearColour = "green";
+        this.lastPos = pos;
         all_Objects.push(this);
     }
 
@@ -1320,10 +1348,16 @@ class Object
 
     SetPosition(x, y)
     {
+        this.lastPos = this.pos;
         this.pos.x = x;
         this.pos.y = y;
         this.clear = true;
         if (this.enabled) this.draw = true;
+    }
+
+    Move(x,y)
+    {
+        this.SetPosition(this.pos.x + (x / FPS_LIMIT), this.pos.y + (y / FPS_LIMIT));
     }
 
     SetClearColour(colour)
@@ -1428,13 +1462,13 @@ class ImageObject extends Object
 
     Render()
     {
+        if (this.clear == true)
+        {
+            context.clearRect(this.lastPos.x, this.lastPos.y, this.lastPos.x + this.width, this.lastPos.y - this.height);
+            this.clear = false;
+        }
         if (this.draw)
         {
-            if (this.customScale)
-            {
-                context.clearRect(this.pos.x, this.pos.y, this.pos.x + this.width, this.pos.y - this.height);
-            }
-
             if (this.enabled)
             {
                 if (this.customScale)
