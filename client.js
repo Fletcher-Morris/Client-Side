@@ -1387,17 +1387,23 @@ class Object
 
 class ImageObject extends Object
 {
-    constructor(name, pos, image, interval)
+    constructor(name, pos, image, interval, loop)
     {
         super(name, pos);
         rendererImages.push(this);
         this.image = image;
         this.draw = true;
         this.animated = false;
+        this.loop = true;
+        this.animComplete = false;
         if(interval != undefined)
         {
             this.AddAnimationFrame(image);
             this.SetAnimationSpeed(interval);
+        }
+        if(loop != undefined)
+        {
+            this.loop = loop;
         }
     }
     SetScale(width, height)
@@ -1463,13 +1469,20 @@ class ImageObject extends Object
 
             if (this.animated)
             {
-                this.animFrameCounter++;
-                if (this.animFrameCounter >= this.animInterval)
+                if(this.animComplete == false)
                 {
-                    this.currentFrame++;
-                    if (this.currentFrame >= this.animFrames.length) this.currentFrame = 0;
-                    this.SetImage(this.animFrames[this.currentFrame]);
-                    this.animFrameCounter = 0;
+                    this.animFrameCounter++;
+                    if (this.animFrameCounter >= this.animInterval)
+                    {
+                        if (this.currentFrame >= this.animFrames.length)
+                        {
+                            this.currentFrame = 0;
+                            if(this.loop == false) this.animComplete = true;
+                        }
+                        this.SetImage(this.animFrames[this.currentFrame]);
+                        this.currentFrame++;
+                        this.animFrameCounter = 0;
+                    }
                 }
             }
         }
