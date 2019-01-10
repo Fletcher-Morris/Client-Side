@@ -235,7 +235,7 @@ function CreateObjects()
     all_Objects = new Array();
 
     //  NAME SELECTION PAGE OBJECTS
-    server_text_message = new TextObject("server_message", new Vector2(400, 280), 800, 50, "CHOOSE A NAME", 25, "white");
+    server_text_message = new TextObject("server_message", new Vector2(400, 280), 800, 50, "CHOOSE A NAME", 20, "white");
     nickname_text = new TextObject("name_text", new Vector2(400, 320), 400, 40, "", 25, "white");
     nickname_text.SetClearColour("orange");
     submit_name_btn = new ButtonObject(new Vector2(300, 450), 200, 50, "ENTER", 25);
