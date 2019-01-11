@@ -427,6 +427,15 @@ function ConnectedPlayers()
 	if(player4 != undefined) {if(player4.connected == true) result.push(player4);}
 	return result;
 }
+function LivingPlayers()
+{
+	var result = [];
+	if(player1 != undefined) {if(player1.connected == true && player1.dead == false) result.push(player1);}
+	if(player2 != undefined) {if(player2.connected == true && player2.dead == false) result.push(player2);}
+	if(player3 != undefined) {if(player3.connected == true && player3.dead == false) result.push(player3);}
+	if(player4 != undefined) {if(player4.connected == true && player4.dead == false) result.push(player4);}
+	return result;
+}
 
 function SendInitialStats()
 {
@@ -463,7 +472,7 @@ function StartGame()
 function ProccessRound()
 {
 	//	CKECK ALL PLAYERS HAVE AN ACTION
-	for(var i = 0; i < ConnectedPlayers().length; i++)
+	for(var i = 0; i < LivingPlayers().length; i++)
 	{
 		if(PlayerByPlayerId(i + 1).action == undefined) return;
 	}
@@ -476,7 +485,7 @@ function ProccessRound()
 	var spellResults = new Array();
 
 	//	Check for boost spells
-	for(var i = 0; i < ConnectedPlayers().length; i++)
+	for(var i = 0; i < LivingPlayers().length; i++)
 	{
 		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
@@ -486,7 +495,7 @@ function ProccessRound()
 		}
 	}
 	//	Check for heal spells
-	for(var i = 0; i < ConnectedPlayers().length; i++)
+	for(var i = 0; i < LivingPlayers().length; i++)
 	{
 		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
@@ -496,7 +505,7 @@ function ProccessRound()
 		}
 	}
 	//	Check for defence spells
-	for(var i = 0; i < ConnectedPlayers().length; i++)
+	for(var i = 0; i < LivingPlayers().length; i++)
 	{
 		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
@@ -505,7 +514,7 @@ function ProccessRound()
 			executionOrder.push(caster);
 		}
 	}
-	for(var i = 0; i < ConnectedPlayers().length; i++)
+	for(var i = 0; i < LivingPlayers().length; i++)
 	{
 		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
@@ -514,7 +523,7 @@ function ProccessRound()
 			executionOrder.push(caster);
 		}
 	}
-	for(var i = 0; i < ConnectedPlayers().length; i++)
+	for(var i = 0; i < LivingPlayers().length; i++)
 	{
 		caster = PlayerByPlayerId(i + 1);
 		spell = caster.action.spell;
@@ -533,122 +542,125 @@ function ProccessRound()
 		caster = executionOrder[i];
 		target = PlayerByPlayerId(caster.action.target);
 		var multiplier = 1.0;
-		if(caster.dead == false && target.dead == false && winningTeam == undefined)
+		if(caster != undefined && target != undefined && winningTeam == undefined)
 		{
-			spell = caster.action.spell;
-			if(spell.type == "special")
+			if(caster.dead == false && target.dead == false)
 			{
-				if(spell.name == "boost")
+				spell = caster.action.spell;
+				if(spell.type == "special")
 				{
-					//	Boost the target
-					target.Boost(1.0);
-					resultText = (caster.name + " cast a boosting spell on " + target.name + "!");
-					resultResult = ("Improving their wizarding abillities!");
-					console.log(caster.name + " boosted " + target.name + "'s spell!");
+					if(spell.name == "boost")
+					{
+						//	Boost the target
+						target.Boost(1.0);
+						resultText = (caster.name + " cast a boosting spell on " + target.name + "!");
+						resultResult = ("Improving their wizarding abillities!");
+						console.log(caster.name + " boosted " + target.name + "'s spell!");
+					}
+					if(spell.name == "heal")
+					{
+						//	Heal the target
+						target.Heal(caster.action.spell.effect * caster.multiplier);
+						if(caster == target)
+						{
+							resultText = (caster.name + " cast a healing spell on themselves!");
+							console.log(caster.name + " healed themselves by " + (caster.action.spell.effect * caster.multiplier) + " points!");
+						}
+						else
+						{
+							resultText = (caster.name + " cast a healing spell on " + target.name + "!");
+							console.log(caster.name + " healed " + target.name + " by " + (caster.action.spell.effect * caster.multiplier) + " points!");
+						}
+						resultResult = ("Increasing their hp to " + target.health + "!");
+					}
 				}
-				if(spell.name == "heal")
+				if(spell.type == "defend")
 				{
-					//	Heal the target
-					target.Heal(caster.action.spell.effect * caster.multiplier);
+					target.Defend(spell.effect * caster.multiplier);
 					if(caster == target)
 					{
-						resultText = (caster.name + " cast a healing spell on themselves!");
-						console.log(caster.name + " healed themselves by " + (caster.action.spell.effect * caster.multiplier) + " points!");
+						resultText = (caster.name + " cast a " + spell.name + " spell on themselves!");
+						console.log(caster.name + " increased their defence by " + (spell.effect * caster.multiplier) + " points!");
 					}
 					else
 					{
-						resultText = (caster.name + " cast a healing spell on " + target.name + "!");
-						console.log(caster.name + " healed " + target.name + " by " + (caster.action.spell.effect * caster.multiplier) + " points!");
+						resultText = (caster.name + " cast a " + spell.name + " spell on " + target.name + "!");
+						console.log(caster.name + " increased " + target.name + "'s defence by " + (spell.effect * caster.multiplier) + " points!");
 					}
-					resultResult = ("Increasing their hp to " + target.health + "!");
+					resultResult = ("Increasing their defence to " + target.defence + "!");
 				}
-			}
-			if(spell.type == "defend")
-			{
-				target.Defend(spell.effect * caster.multiplier);
-				if(caster == target)
-				{
-					resultText = (caster.name + " cast a " + spell.name + " spell on themselves!");
-					console.log(caster.name + " increased their defence by " + (spell.effect * caster.multiplier) + " points!");
-				}
-				else
+				else if(spell.type == "attack")
 				{
 					resultText = (caster.name + " cast a " + spell.name + " spell on " + target.name + "!");
-					console.log(caster.name + " increased " + target.name + "'s defence by " + (spell.effect * caster.multiplier) + " points!");
-				}
-				resultResult = ("Increasing their defence to " + target.defence + "!");
-			}
-			else if(spell.type == "attack")
-			{
-				resultText = (caster.name + " cast a " + spell.name + " spell on " + target.name + "!");
-				if(target.action.spell.type == "evade")
-				{
-					if(CoinFlip(1.0 / target.action.spell.effect))
+					if(target.action.spell.type == "evade")
 					{
-						//	Evade fails
+						if(CoinFlip(1.0 / target.action.spell.effect))
+						{
+							//	Evade fails
+							target.Damage(spell.effect * caster.multiplier);
+							resultResult = ("Damaging " + target.name + " by " + (spell.effect * caster.multiplier) + " hp!");
+							console.log(target.name + " tried to evade " + caster.name + "'s spell but failed!");
+							console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
+						}
+						else
+						{
+							//	Evade succeedes
+							resultResult = ("But " + target.name + " evaded!");
+							console.log(caster.name + " used '" + spell.name + "' on " + target.name + ", but " + target.name + " evaded!");
+						}
+						target.evadedNothing = false;
+					}
+					else if(target.defence > 0)
+					{
+						//	Target absorbs damage, if defence value exeeds attack value, difference is reflected back
+						var differenceValue = target.defence - (spell.effect * caster.multiplier);
+						if(differenceValue >= 1)
+						{
+							//	Reflect
+							if(differenceValue >= (spell.effect * caster.multiplier)) differenceValue = (spell.effect * caster.multiplier);
+							resultResult = ("But " + target.name + "'s defence deflected " + differenceValue + " back towards them!");
+							console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + differenceValue + " back towards them!");
+							caster.Damage(differenceValue);
+						}
+						else if (differenceValue <= -1)
+						{
+							target.Damage(-differenceValue);
+							resultResult = (target.name + "'s defence absorbed some of the damage!");
+							console.log(target.name + "'s defence absorbed " + (-differenceValue) + " damage from " + caster.name + "'s '" + spell.name + "' spell!");
+						}
+						else
+						{
+							resultResult = ("But " + target.name + "'s defence protected them!");
+							console.log(target.name + "'s defence protected them from " + caster.name + "'s '" + spell.name + "' spell!");
+						}
+						target.defence -= (spell.effect * caster.multiplier);
+					}
+					else
+					{
 						target.Damage(spell.effect * caster.multiplier);
-						resultResult = ("Damaging " + target.name + " by " + (spell.effect * caster.multiplier) + " hp!");
-						console.log(target.name + " tried to evade " + caster.name + "'s spell but failed!");
+						resultResult = ("It did " + (spell.effect * caster.multiplier) + " damage!");
 						console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
 					}
-					else
-					{
-						//	Evade succeedes
-						resultResult = ("But " + target.name + " evaded!");
-						console.log(caster.name + " used '" + spell.name + "' on " + target.name + ", but " + target.name + " evaded!");
-					}
-					target.evadedNothing = false;
+
+					target.DeathCheck();
+					if(target != caster) caster.DeathCheck();
 				}
-				else if(target.defence > 0)
+				if(spell.type == "evade")
 				{
-					//	Target absorbs damage, if defence value exeeds attack value, difference is reflected back
-					var differenceValue = target.defence - (spell.effect * caster.multiplier);
-					if(differenceValue >= 1)
+					if(target.evadedNothing)
 					{
-						//	Reflect
-						if(differenceValue >= (spell.effect * caster.multiplier)) differenceValue = (spell.effect * caster.multiplier);
-						resultResult = ("But " + target.name + "'s defence deflected " + differenceValue + " back towards them!");
-						console.log(target.name + "'s defence overpowered " + caster.name + "'s '" + spell.name + "' spell, deflecting " + differenceValue + " back towards them!");
-						caster.Damage(differenceValue);
+						console.log(caster.name + " evaded nothing!");
 					}
-					else if (differenceValue <= -1)
-					{
-						target.Damage(-differenceValue);
-						resultResult = (target.name + "'s defence absorbed some of the damage!");
-						console.log(target.name + "'s defence absorbed " + (-differenceValue) + " damage from " + caster.name + "'s '" + spell.name + "' spell!");
-					}
-					else
-					{
-						resultResult = ("But " + target.name + "'s defence protected them!");
-						console.log(target.name + "'s defence protected them from " + caster.name + "'s '" + spell.name + "' spell!");
-					}
-					target.defence -= (spell.effect * caster.multiplier);
-				}
-				else
-				{
-					target.Damage(spell.effect * caster.multiplier);
-					resultResult = ("It did " + (spell.effect * caster.multiplier) + " damage!");
-					console.log(caster.name + " used '" + spell.name + "' and damaged " + target.name + " " + (spell.effect * caster.multiplier) + " points!");
 				}
 
-				target.DeathCheck();
-				if(target != caster) caster.DeathCheck();
+				//	Drain the cost of the spell from the caster's mana pool
+				caster.DrainMana(spell.cost);
+
+				if(target.defence < 0) target.defence = 0;
+				if(caster.defence < 0) caster.defence = 0;
+
+				if(spell.type != "evade") spellResults.push(new SpellResult(caster.id, target.id, spell.name, resultText, resultResult));
 			}
-			if(spell.type == "evade")
-			{
-				if(target.evadedNothing)
-				{
-					console.log(caster.name + " evaded nothing!");
-				}
-			}
-
-			//	Drain the cost of the spell from the caster's mana pool
-			caster.DrainMana(spell.cost);
-
-			if(target.defence < 0) target.defence = 0;
-			if(caster.defence < 0) caster.defence = 0;
-
-			if(spell.type != "evade") spellResults.push(new SpellResult(caster.id, target.id, spell.name, resultText, resultResult));
 		}
 	}
 

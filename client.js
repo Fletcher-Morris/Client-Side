@@ -144,6 +144,10 @@ function SetUpNetworking()
     }
     console.log("Connecting to server : " + ("http://" + serverAddress + ":" + serverPort));
     socket = io("http://" + serverAddress + ":" + serverPort);
+    socket.on('disconnect', function()
+    {
+        SetGameState("CONNECTING_TO_SERVER", true);
+    });
     socket.on('marco', function()
     {
         socket.emit('polo', function(data) {});
@@ -207,7 +211,7 @@ function SetUpNetworking()
     {
         for (var i = 0; i < 4; i++)
         {
-
+            if(data[i] != undefined)
             GetPlayerById(data[i].id).SetStats(data[i].health, data[i].mana, data[i].defence);
         }
         UpdatePlayerStatsText();
@@ -250,10 +254,10 @@ function CreateObjects()
     spellDescription = new TextObject("spell_description", new Vector2(400, 250), 400, 180, "SPELL DESCRIPTION", 15, "white");
     spellDescription.SetSplitter('#', "top");
 
-    player_1_sprite = new ImageObject("player_1", new Vector2(50, 50), wizard_img);
-    player_2_sprite = new ImageObject("player_2", new Vector2(50, 300), wizard_img);
-    player_3_sprite = new ImageObject("player_3", new Vector2(650, 50), wizard_img);
-    player_4_sprite = new ImageObject("player_4", new Vector2(650, 300), wizard_img);
+    player_1_sprite = new ImageObject("player_1", new Vector2(40, 40), wizard_img);
+    player_2_sprite = new ImageObject("player_2", new Vector2(40, 310), wizard_img);
+    player_3_sprite = new ImageObject("player_3", new Vector2(660, 40), wizard_img);
+    player_4_sprite = new ImageObject("player_4", new Vector2(660, 310), wizard_img);
     player_1_info = new TextObject("player_1_info", new Vector2(240, 100), 150, 90, "player 1#hp : 10#mn : 10#df : 0", 15, "white");
     player_1_info.SetSplitter('#', "top");
     player_1_info.SetAlign("left");
@@ -354,10 +358,21 @@ class Player
         this.health = health;
         this.mana = mana;
         this.defence = defence;
+    }
 
+    DeathTest()
+    {
         if (this.health <= 0)
         {
-            this.SetSpriteImage(wizard_dead_img);
+            if(this.id == selfPlayer.id)
+            {
+                wonLastGame = false;
+                SetGameState("GAME_OVER");
+            }
+            else
+            {
+                this.SetSpriteImage(wizard_dead_img);
+            }
         }
     }
 
@@ -940,6 +955,7 @@ function Update()
     {
         for(var i = 0; i < 4; i++)
         {
+            if(playerData[i].health >= 1)
             playerData[i].sprite.SetImage(wizard_img);
         }
         if(timeSinceState <= 3.0)
@@ -947,7 +963,7 @@ function Update()
             for(var i = 0; i < 4; i++)
             {
                 if((playerData[i].id == spellResults[0].caster) || (playerData[i].id == spellResults[0].target))
-                {                            
+                {            
                 }
                 else
                 {
@@ -967,7 +983,7 @@ function Update()
             for(var i = 0; i < 4; i++)
             {
                 if((playerData[i].id == spellResults[0].caster) || (playerData[i].id == spellResults[0].target))
-                {                            
+                {
                 }
                 else
                 {
@@ -988,15 +1004,25 @@ function Update()
             {
                 if(playerData[i].id == spellResults[0].caster)
                 {
-                    playerData[i].sprite.Enable(false);
-                    spellCastingAmination.Enable(true);
-                    spellCastingAmination.SetLooping(false);
-                    spellCastingAmination.SetPosition(playerData[i].sprite.pos.x, playerData[i].sprite.pos.y);
+                    if(playerData[i].health >= 1)
+                    {
+                        playerData[i].sprite.Enable(false);
+                        spellCastingAmination.Enable(true);
+                        spellCastingAmination.SetLooping(false);
+                        spellCastingAmination.SetPosition(playerData[i].sprite.pos.x, playerData[i].sprite.pos.y);
+                    }                    
                 }
             }
             if(timeSinceState >= 5.0)
             {
                 server_text_message.SetText(spellResults[0].result);
+                for(var j = 0; j < 4; j++)
+                {
+                    if(playerData[j].id == spellResults[0].target)
+                    {
+                        playerData[j].DeathTest();
+                    }
+                }
             }
             else if(timeSinceState >= 3.0)
             {
@@ -1099,6 +1125,7 @@ function EnterGameState()
         chosenSpell = undefined;
         EnableActionButtons(true);
         SetAvailableSpells();
+        attack_btn.Hover(true);
     }
     else if (changeToState == "CHOOSING_ATTACK")
     {
